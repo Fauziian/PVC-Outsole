@@ -1,14 +1,19 @@
 <?php
 
-// Ensure required /tmp directories exist for Vercel serverless
-$dirs = [
+/**
+ * Vercel Serverless Entrypoint for Laravel
+ * Ensures writable /tmp directories exist, then delegates to Laravel.
+ */
+
+// Ensure required /tmp directories exist for Vercel serverless (read-only filesystem)
+$vercelTmpDirs = [
     '/tmp/storage/framework/sessions',
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache/data',
     '/tmp/storage/app/public',
     '/tmp/storage/logs',
 ];
-foreach ($dirs as $dir) {
+foreach ($vercelTmpDirs as $dir) {
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
