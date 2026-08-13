@@ -1,17 +1,11 @@
 <?php
 
-// Redirect storage to /tmp for Vercel serverless (read-only filesystem)
-$app = require __DIR__ . '/../bootstrap/app.php';
-
-// Override storage paths to use /tmp (the only writable directory on Vercel)
-$app->useStoragePath('/tmp/storage');
-
-// Also ensure the necessary /tmp directories exist
+// Ensure required /tmp directories exist for Vercel serverless
 $dirs = [
     '/tmp/storage/framework/sessions',
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache/data',
-    '/tmp/storage/app',
+    '/tmp/storage/app/public',
     '/tmp/storage/logs',
 ];
 foreach ($dirs as $dir) {
@@ -20,10 +14,5 @@ foreach ($dirs as $dir) {
     }
 }
 
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-
-$request = Illuminate\Http\Request::capture();
-$response = $kernel->handle($request);
-$response->send();
-
-$kernel->terminate($request, $response);
+// Forward all requests to Laravel's public/index.php entry point
+require __DIR__ . '/../public/index.php';
