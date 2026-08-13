@@ -24,6 +24,21 @@ foreach ($vercelTmpDirs as $dir) {
     }
 }
 
+// If using SQLite, copy the database to /tmp to make it writable
+$dbConnection = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? ($_SERVER['DB_CONNECTION'] ?? 'sqlite'));
+if ($dbConnection === 'sqlite') {
+    $dbPath = '/tmp/database.sqlite';
+    $srcPath = __DIR__ . '/../database/database.sqlite';
+    if (!file_exists($dbPath) && file_exists($srcPath)) {
+        copy($srcPath, $dbPath);
+        @chmod($dbPath, 0666);
+    }
+    putenv('DB_DATABASE=' . $dbPath);
+    $_ENV['DB_DATABASE'] = $dbPath;
+    $_SERVER['DB_DATABASE'] = $dbPath;
+}
+
+
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
