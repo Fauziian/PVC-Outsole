@@ -3,7 +3,7 @@ import { Link, usePage, router } from "@inertiajs/react";
 import {
   LayoutDashboard, Users, Shield, Settings, UserCheck, Clock,
   CreditCard, FileText, BarChart2, Package, Bell, Search,
-  ChevronDown, ChevronRight, ChevronLeft, LogOut, AlertTriangle, X
+  ChevronDown, ChevronRight, ChevronLeft, LogOut, AlertTriangle, X, Menu
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 
@@ -66,12 +66,29 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
     return false;
   });
 
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [showU, setShowU] = useState(false);
   const uRef = useRef<HTMLDivElement>(null);
+
+  // Deteksi ukuran layar untuk mobile responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024); // Menggunakan breakpoint lg (1024px) untuk kenyamanan tablet
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("sidebar_collapsed", String(collapsed));
   }, [collapsed]);
+
+  // Tutup sidebar otomatis di mobile setelah pindah halaman
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [usePage().url]);
 
   // Handle flash messages dari Laravel
   useEffect(() => {
@@ -105,11 +122,22 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
       <Toaster position="top-right" richColors />
 
+      {/* BACKDROP OVERLAY UNTUK MOBILE */}
+      {isMobile && isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-30 transition-opacity duration-300"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR */}
       <div
-        className="flex flex-col flex-shrink-0 h-screen transition-all duration-300 ease-in-out z-20"
+        className={`flex flex-col flex-shrink-0 h-screen transition-all duration-300 ease-in-out z-40
+          ${isMobile ? "fixed inset-y-0 left-0" : "relative"}
+          ${isMobile ? (isMobileOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
+        `}
         style={{
-          width: collapsed ? 64 : 260,
+          width: isMobile ? 260 : (collapsed ? 64 : 260),
           background: "#0F172A",
           borderRight: "1px solid #1E293B"
         }}
@@ -120,18 +148,27 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30">
               <span className="text-white text-sm font-bold">SP</span>
             </div>
-            {!collapsed && (
+            {(!collapsed || isMobile) && (
               <div className="ml-3 overflow-hidden">
                 <p className="text-white text-[14px] font-bold whitespace-nowrap leading-tight tracking-wide">Sumber PVC</p>
                 <p className="text-slate-500 text-[10px] whitespace-nowrap leading-tight">Outsole Tali Jepit</p>
               </div>
             )}
           </div>
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800/50"
+              title="Tutup Menu"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
         {/* Navigation Items */}
         <nav className="flex-1 py-4 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
-          {!collapsed && (
+          {(!collapsed || isMobile) && (
             <p className="px-4 mb-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
               Menu Utama
             </p>
@@ -139,7 +176,7 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
           <ul className="space-y-1 px-2">
             {navItems.map((item) => {
               // Cek active route
-              const active = route().current(item.route) || 
+              const active = route().current(item.route) ||
                              (item.id === "employees" && route().current("employees.*")) ||
                              (item.id === "payroll" && route().current("payroll.*"));
               const Icon = item.icon;
@@ -154,16 +191,16 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
                     }`}
                   >
                     <Icon size={16} strokeWidth={2} className="flex-shrink-0" />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
-                    
+                    {(!collapsed || isMobile) && <span className="truncate">{item.label}</span>}
+
                     {/* Badge Notifikasi khusus untuk stok */}
-                    {item.id === "notifications" && unread_notifications_count > 0 && !collapsed && (
+                    {item.id === "notifications" && unread_notifications_count > 0 && (!collapsed || isMobile) && (
                       <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full">
                         {unread_notifications_count}
                       </span>
                     )}
 
-                    {collapsed && (
+                    {collapsed && !isMobile && (
                       <span className="absolute left-[70px] top-1/2 -translate-y-1/2 bg-slate-800 border border-slate-700 text-white text-xs px-2.5 py-1.5 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-all shadow-xl">
                         {item.label}
                         {item.id === "notifications" && unread_notifications_count > 0 && ` (${unread_notifications_count})`}
@@ -178,7 +215,7 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
 
         {/* Footer Sidebar & Collapse Button */}
         <div className="border-t border-slate-800/80 flex-shrink-0 bg-slate-950/40">
-          {!collapsed && (
+          {(!collapsed || isMobile) && (
             <div className="px-4 py-3.5 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 font-bold text-xs border border-blue-500/30">
                 {initials}
@@ -196,31 +233,42 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
               </button>
             </div>
           )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-full h-10 flex items-center justify-center text-slate-500 hover:text-slate-300 hover:bg-slate-800/30 transition-colors"
-          >
-            {collapsed ? <ChevronRight size={15} strokeWidth={2} /> : <ChevronLeft size={15} strokeWidth={2} />}
-          </button>
+          {!isMobile && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-full h-10 flex items-center justify-center text-slate-500 hover:text-slate-300 hover:bg-slate-800/30 transition-colors"
+            >
+              {collapsed ? <ChevronRight size={15} strokeWidth={2} /> : <ChevronLeft size={15} strokeWidth={2} />}
+            </button>
+          )}
         </div>
       </div>
 
       {/* CONTENT AREA */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* TOPBAR */}
-        <header className="h-14 bg-white border-b border-slate-200/80 flex items-center px-6 justify-between flex-shrink-0 z-10">
+        <header className="h-14 bg-white border-b border-slate-200/80 flex items-center px-4 md:px-6 justify-between flex-shrink-0 z-10">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400">Sumber PVC Outsole Tali Jepit</span>
-            <ChevronRight size={12} className="text-slate-300 flex-shrink-0 font-bold" />
+            {isMobile && (
+              <button
+                onClick={() => setIsMobileOpen(true)}
+                className="p-1.5 -ml-1 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+                title="Buka Menu"
+              >
+                <Menu size={20} />
+              </button>
+            )}
+            <span className="text-xs font-semibold text-slate-400 hidden sm:inline">Sumber PVC Outsole Tali Jepit</span>
+            <ChevronRight size={12} className="text-slate-300 flex-shrink-0 font-bold hidden sm:inline" />
             <span className="text-xs font-bold text-slate-700 capitalize">
               {route().current()?.split(".")[0]?.replace("-", " ") || "Dashboard"}
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {/* Notifikasi Badge Topbar */}
             {role === "warehouse" && (
-              <Link 
+              <Link
                 href={route("stock.notifications")}
                 className="relative w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
                 title="Notifikasi Stok"
@@ -238,7 +286,7 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
             <div ref={uRef} className="relative">
               <button
                 onClick={() => setShowU(!showU)}
-                className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-lg hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200/60"
+                className="flex items-center gap-1.5 md:gap-2 pl-1.5 pr-2 md:pl-2 md:pr-3 py-1 rounded-lg hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200/60"
               >
                 <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
                   {initials}
@@ -272,8 +320,8 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50/30 p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto bg-slate-50/30 p-4 md:p-6">
+          <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
             {children}
           </div>
         </main>
