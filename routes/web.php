@@ -1,0 +1,108 @@
+<?php
+
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+// Redirection root page ke login
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
+// Middleware auth untuk semua modul
+Route::middleware(['auth'])->group(function () {
+    
+    // 1. Dashboard (Aksesible untuk semua role terautentikasi)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // 2. Modul Admin (Role: admin)
+    Route::middleware(['role:admin'])->group(function () {
+        // Manajemen Pengguna
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        
+        // Pengaturan Gaji
+        Route::get('/payroll/settings', [PayrollController::class, 'settings'])->name('payroll.settings');
+        Route::post('/payroll/settings', [PayrollController::class, 'updateSettings'])->name('payroll.settings.update');
+    });
+
+    // 3. Modul HR / Penggajian (Role: hr)
+    Route::middleware(['role:hr'])->group(function () {
+        // Data Karyawan
+        Route::get('/employees', [KaryawanController::class, 'index'])->name('employees.index');
+        Route::post('/employees', [KaryawanController::class, 'store'])->name('employees.store');
+        Route::put('/employees/{employee}', [KaryawanController::class, 'update'])->name('employees.update');
+        Route::delete('/employees/{employee}', [KaryawanController::class, 'destroy'])->name('employees.destroy');
+
+        // Kehadiran / Absensi
+        Route::get('/attendance', [AbsensiController::class, 'index'])->name('attendance.index');
+        Route::post('/attendance', [AbsensiController::class, 'store'])->name('attendance.store');
+        Route::delete('/attendance/{attendance}', [AbsensiController::class, 'destroy'])->name('attendance.destroy');
+
+        // Komponen Gaji & Slip
+        Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::post('/payroll/calculate', [PayrollController::class, 'calculatePeriod'])->name('payroll.calculate');
+        Route::get('/payroll/{payroll}', [PayrollController::class, 'show'])->name('payroll.show');
+        Route::put('/payroll/{payroll}/finalize', [PayrollController::class, 'finalize'])->name('payroll.finalize');
+        Route::get('/payroll/{payroll}/pdf', [PayrollController::class, 'downloadPdf'])->name('payroll.pdf');
+
+        // Laporan HR (Unduh PDF/Excel)
+        Route::get('/reports/attendance/pdf', [ReportController::class, 'downloadAttendancePdf'])->name('reports.attendance.pdf');
+        Route::get('/reports/payroll/excel', [ReportController::class, 'exportPayrollExcel'])->name('reports.payroll.excel');
+    });
+
+    // 4. Modul Gudang / Stock (Role: warehouse)
+    Route::middleware(['role:warehouse'])->group(function () {
+        // Stock Overview
+        Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::post('/stock', [StockController::class, 'storeItem'])->name('stock.store');
+        Route::put('/stock/{item}', [StockController::class, 'updateItem'])->name('stock.update');
+        Route::delete('/stock/{item}', [StockController::class, 'destroyItem'])->name('stock.destroy');
+
+        // Transaksi Barang Masuk
+        Route::get('/stock/incoming', [StockController::class, 'incoming'])->name('stock.incoming');
+        Route::post('/stock/incoming', [StockController::class, 'storeIncoming'])->name('stock.incoming.store');
+
+        // Transaksi Barang Keluar
+        Route::get('/stock/outgoing', [StockController::class, 'outgoing'])->name('stock.outgoing');
+        Route::post('/stock/outgoing', [StockController::class, 'storeOutgoing'])->name('stock.outgoing.store');
+
+        // Notifikasi Stok
+        Route::get('/stock/notifications', [StockController::class, 'notifications'])->name('stock.notifications');
+        Route::put('/stock/notifications/{notification}/read', [StockController::class, 'markAsRead'])->name('stock.notifications.read');
+        Route::post('/stock/notifications/read-all', [StockController::class, 'readAllNotifications'])->name('stock.notifications.read-all');
+
+        // Laporan Gudang (Unduh Excel)
+        Route::get('/reports/stock/excel', [ReportController::class, 'exportStockExcel'])->name('reports.stock.excel');
+    });
+
+    // 5. Modul Manajemen (Role: management)
+    Route::middleware(['role:management'])->group(function () {
+        // Monitoring Finansial Penggajian
+        Route::get('/management/payroll', [PayrollController::class, 'index'])->name('management.payroll');
+        // Monitoring Mutasi Stok Gudang
+        Route::get('/management/stock', [StockController::class, 'index'])->name('management.stock');
+    });
+
+    // 6. Laporan Index page (Aksesible untuk HR, Warehouse, Management)
+    Route::get('/reports', [ReportController::class, 'index'])
+        ->middleware(['role:hr,warehouse,management'])
+        ->name('reports.index');
+
+    // Profile standard breeze routes
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
