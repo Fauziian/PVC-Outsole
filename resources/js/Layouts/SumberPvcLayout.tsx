@@ -32,11 +32,8 @@ const navByRole: Record<Role, NavItem[]> = {
   ],
   warehouse: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
-    { id: "stock", label: "Overview Stok", icon: Package, route: "stock.index" },
     { id: "incoming", label: "Barang Masuk", icon: Package, route: "stock.incoming" },
     { id: "outgoing", label: "Barang Keluar", icon: Package, route: "stock.outgoing" },
-    { id: "notifications", label: "Notifikasi Stok", icon: AlertTriangle, route: "stock.notifications" },
-    { id: "reports", label: "Laporan Modul", icon: FileText, route: "reports.index" },
   ],
   management: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
@@ -266,22 +263,6 @@ export default function SumberPvcLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Notifikasi Badge Topbar */}
-            {role === "warehouse" && (
-              <Link
-                href={route("stock.notifications")}
-                className="relative w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
-                title="Notifikasi Stok"
-              >
-                <Bell size={16} strokeWidth={2} />
-                {unread_notifications_count > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center border-2 border-white">
-                    {unread_notifications_count}
-                  </span>
-                )}
-              </Link>
-            )}
-
             {/* Profile Dropdown */}
             <div ref={uRef} className="relative">
               <button

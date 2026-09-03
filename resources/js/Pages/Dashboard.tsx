@@ -63,7 +63,7 @@ export default function Dashboard({
             Selamat Datang di Portal Operasional
           </h1>
           <p className="text-blue-100/90 text-xs sm:text-sm max-w-2xl leading-relaxed">
-            Kelola aktivitas absensi harian, perhitungan gaji berbasis masa kerja, monitoring inventori PVC Compound, hingga integrasi rekapitulasi laporan secara real-time.
+            {role === "warehouse" ? "Pantau stok barang jadi serta catat hasil cetak masuk dan pengiriman barang kepada pelanggan." : "Pantau aktivitas operasional pabrik dalam satu sistem."}
           </p>
         </div>
         <div className="absolute right-0 bottom-0 top-0 opacity-10 pointer-events-none hidden md:block">
@@ -93,7 +93,7 @@ export default function Dashboard({
 
         {role === "warehouse" && (
           <>
-            <CardStat label="Jenis Bahan Baku" value={stats.total_jenis_barang} icon={Package} color="bg-blue-500" />
+            <CardStat label="Varian Produk" value={stats.total_jenis_barang} icon={Package} color="bg-blue-500" />
             <CardStat label="Stok Level Aman" value={stats.stok_aman} icon={UserCheck} color="bg-emerald-500" />
             <CardStat label="Stok Level Menipis" value={stats.stok_menipis} icon={AlertTriangle} color="bg-amber-500" />
             <CardStat label="Stok Level Kritis" value={stats.stok_kritis} icon={AlertTriangle} color="bg-rose-500" />
@@ -218,7 +218,7 @@ export default function Dashboard({
             <div className="space-y-6">
               <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-slate-800">Penerimaan Barang Masuk (Restock) Terakhir</h3>
+                  <h3 className="text-sm font-bold text-slate-800">Hasil Cetak Masuk Terakhir</h3>
                   <Link href={route("stock.incoming")} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                     Catat Transaksi <ArrowRight size={13} />
                   </Link>
@@ -227,19 +227,19 @@ export default function Dashboard({
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        <th className="pb-2">Bahan Baku</th>
+                        <th className="pb-2">Produk</th>
                         <th className="pb-2">Tanggal</th>
                         <th className="pb-2">Kuantitas</th>
-                        <th className="pb-2">Pemasok</th>
+                        <th className="pb-2">Warna</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 text-xs">
                       {recent_masuk.map((t) => (
                         <tr key={t.id}>
-                          <td className="py-2.5 font-semibold text-slate-800">{t.barang_pvc.nama_barang}</td>
+                          <td className="py-2.5 font-semibold text-slate-800">{t.barang_pvc.kategori} — {t.barang_pvc.jenis}</td>
                           <td className="py-2.5 text-slate-500">{t.tanggal}</td>
                           <td className="py-2.5 text-green-600 font-bold">+{t.jumlah} {t.barang_pvc.satuan}</td>
-                          <td className="py-2.5 text-slate-600 font-semibold">{t.pemasok}</td>
+                          <td className="py-2.5 text-slate-600 font-semibold">{t.barang_pvc.warna}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -249,7 +249,7 @@ export default function Dashboard({
 
               <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-bold text-slate-800">Pengeluaran Barang Keluar (Produksi) Terakhir</h3>
+                  <h3 className="text-sm font-bold text-slate-800">Pengiriman ke Pelanggan Terakhir</h3>
                   <Link href={route("stock.outgoing")} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                     Catat Transaksi <ArrowRight size={13} />
                   </Link>
@@ -258,16 +258,16 @@ export default function Dashboard({
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        <th className="pb-2">Bahan Baku</th>
+                        <th className="pb-2">Produk</th>
                         <th className="pb-2">Tanggal</th>
                         <th className="pb-2">Kuantitas</th>
-                        <th className="pb-2">Tujuan Lini</th>
+                        <th className="pb-2">Pelanggan</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 text-xs">
                       {recent_keluar.map((t) => (
                         <tr key={t.id}>
-                          <td className="py-2.5 font-semibold text-slate-800">{t.barang_pvc.nama_barang}</td>
+                          <td className="py-2.5 font-semibold text-slate-800">{t.barang_pvc.kategori} — {t.barang_pvc.jenis} — {t.barang_pvc.warna}</td>
                           <td className="py-2.5 text-slate-500">{t.tanggal}</td>
                           <td className="py-2.5 text-red-500 font-bold">-{t.jumlah} {t.barang_pvc.satuan}</td>
                           <td className="py-2.5 text-slate-600 font-semibold">{t.tujuan_penggunaan}</td>

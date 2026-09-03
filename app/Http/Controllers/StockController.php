@@ -23,7 +23,7 @@ class StockController extends Controller
     }
 
     /**
-     * Tampilkan data master stok barang PVC.
+     * Tampilkan katalog dan stok barang jadi.
      */
     public function index(Request $request): Response
     {
@@ -33,7 +33,9 @@ class StockController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('kode_barang', 'like', "%{$search}%");
+                  ->orWhere('kode_barang', 'like', "%{$search}%")
+                  ->orWhere('jenis', 'like', "%{$search}%")
+                  ->orWhere('warna', 'like', "%{$search}%");
             });
         }
 
@@ -70,15 +72,18 @@ class StockController extends Controller
         $validated = $request->validate([
             'nama_barang' => ['required', 'string', 'max:255'],
             'kode_barang' => ['required', 'string', 'unique:barang_pvc,kode_barang', 'max:50'],
-            'satuan' => ['required', 'string', 'max:20'],
+            'kategori' => ['required', 'in:Tali Jepit,Outsole'],
+            'jenis' => ['required', 'string', 'max:100'],
+            'warna' => ['required', 'string', 'max:100'],
             'stok_minimum' => ['required', 'integer', 'min:0'],
             'stok_saat_ini' => ['required', 'integer', 'min:0'],
             'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $validated['satuan'] = 'kodi';
         BarangPvc::create($validated);
 
-        return redirect()->back()->with('success', 'Bahan baku PVC berhasil didaftarkan.');
+        return redirect()->back()->with('success', 'Produk jadi berhasil didaftarkan.');
     }
 
     /**
@@ -89,14 +94,16 @@ class StockController extends Controller
         $validated = $request->validate([
             'nama_barang' => ['required', 'string', 'max:255'],
             'kode_barang' => ['required', 'string', 'max:50', 'unique:barang_pvc,kode_barang,' . $item->id],
-            'satuan' => ['required', 'string', 'max:20'],
+            'kategori' => ['required', 'in:Tali Jepit,Outsole'],
+            'jenis' => ['required', 'string', 'max:100'],
+            'warna' => ['required', 'string', 'max:100'],
             'stok_minimum' => ['required', 'integer', 'min:0'],
             'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
         $item->update($validated);
 
-        return redirect()->back()->with('success', 'Data bahan baku PVC berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Data produk berhasil diperbarui.');
     }
 
     /**
@@ -106,11 +113,11 @@ class StockController extends Controller
     {
         // Cek jika barang sudah memiliki riwayat transaksi
         if ($item->barangMasuk()->exists() || $item->barangKeluar()->exists()) {
-            return redirect()->back()->with('error', 'Bahan baku tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
+            return redirect()->back()->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
         }
 
         $item->delete();
-        return redirect()->back()->with('success', 'Bahan baku PVC berhasil dihapus.');
+        return redirect()->back()->with('success', 'Produk berhasil dihapus.');
     }
 
     /**
@@ -124,7 +131,7 @@ class StockController extends Controller
             $query->whereHas('barangPvc', function($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
                   ->orWhere('kode_barang', 'like', "%{$search}%");
-            })->orWhere('pemasok', 'like', "%{$search}%");
+            });
         }
 
         $transactions = $query->orderBy('tanggal', 'desc')
@@ -132,7 +139,8 @@ class StockController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $barangList = BarangPvc::orderBy('nama_barang', 'asc')->get(['id', 'nama_barang', 'kode_barang', 'satuan']);
+        $barangList = BarangPvc::orderBy('kategori')->orderBy('jenis')->orderBy('warna')
+            ->get(['id', 'nama_barang', 'kode_barang', 'kategori', 'jenis', 'warna', 'satuan']);
 
         return Inertia::render('Stock/Incoming', [
             'transactions' => $transactions,
@@ -147,16 +155,16 @@ class StockController extends Controller
     public function storeIncoming(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'id_barang' => ['required', 'exists:barang_pvc,id'],
-            'tanggal' => ['required', 'date'],
-            'jumlah' => ['required', 'integer', 'min:1'],
-            'pemasok' => ['required', 'string', 'max:255'],
-            'keterangan' => ['nullable', 'string', 'max:500'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.id_barang' => ['required', 'distinct', 'exists:barang_pvc,id'],
+            'items.*.tanggal' => ['required', 'date'],
+            'items.*.jumlah' => ['required', 'integer', 'min:1'],
+            'items.*.keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $this->stockService->recordIncoming($validated);
+        $this->stockService->recordIncomingBatch($validated['items']);
 
-        return redirect()->back()->with('success', 'Transaksi barang masuk berhasil dicatat. Stok ditambahkan.');
+        return redirect()->back()->with('success', count($validated['items']).' hasil cetak berhasil disimpan ke stok.');
     }
 
     /**
@@ -180,7 +188,7 @@ class StockController extends Controller
 
         $barangList = BarangPvc::where('stok_saat_ini', '>', 0)
             ->orderBy('nama_barang', 'asc')
-            ->get(['id', 'nama_barang', 'kode_barang', 'satuan', 'stok_saat_ini']);
+            ->get(['id', 'nama_barang', 'kode_barang', 'kategori', 'jenis', 'warna', 'satuan', 'stok_saat_ini']);
 
         return Inertia::render('Stock/Outgoing', [
             'transactions' => $transactions,
@@ -195,20 +203,25 @@ class StockController extends Controller
     public function storeOutgoing(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'id_barang' => ['required', 'exists:barang_pvc,id'],
-            'tanggal' => ['required', 'date'],
-            'jumlah' => ['required', 'integer', 'min:1'],
-            'tujuan_penggunaan' => ['required', 'string', 'max:255'],
-            'keterangan' => ['nullable', 'string', 'max:500'],
+            'pelanggan' => ['required', 'string', 'max:255'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.id_barang' => ['required', 'distinct', 'exists:barang_pvc,id'],
+            'items.*.tanggal' => ['required', 'date'],
+            'items.*.jumlah' => ['required', 'integer', 'min:1'],
+            'items.*.keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
         try {
-            $this->stockService->recordOutgoing($validated);
+            $items = array_map(fn ($item) => [
+                ...$item,
+                'tujuan_penggunaan' => $validated['pelanggan'],
+            ], $validated['items']);
+            $this->stockService->recordOutgoingBatch($items);
         } catch (Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Transaksi barang keluar berhasil dicatat. Stok dikurangi.');
+        return redirect()->back()->with('success', count($validated['items']).' produk berhasil dikirim ke pelanggan.');
     }
 
     /**

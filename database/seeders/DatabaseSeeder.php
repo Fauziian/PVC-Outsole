@@ -247,163 +247,60 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 5. Seed Master Data Barang PVC (Bahan Baku Outsole)
+        // 5. Katalog barang jadi. Jumlah disimpan dan ditampilkan dalam kodi.
         $barangData = [
-            [
-                'nama_barang' => 'PVC Compound Putih (A-grade)',
-                'kode_barang' => 'PVC-CW',
-                'satuan' => 'kg',
-                'stok_minimum' => 2000,
-                'stok_saat_ini' => 4200,
-                'keterangan' => 'Bahan utama outsole warna putih premium',
-            ],
-            [
-                'nama_barang' => 'PVC Rigid Transparan',
-                'kode_barang' => 'PVC-RT',
-                'satuan' => 'kg',
-                'stok_minimum' => 1500,
-                'stok_saat_ini' => 1850,
-                'keterangan' => 'Untuk outsole bening / variasi transparan',
-            ],
-            [
-                'nama_barang' => 'PVC Flex Hitam',
-                'kode_barang' => 'PVC-FH',
-                'satuan' => 'kg',
-                'stok_minimum' => 1200,
-                'stok_saat_ini' => 800, // Di bawah minimum, memicu warning
-                'keterangan' => 'Bahan lentur untuk tali jepit hitam',
-            ],
-            [
-                'nama_barang' => 'PVC Granule Abu-Abu',
-                'kode_barang' => 'PVC-GA',
-                'satuan' => 'kg',
-                'stok_minimum' => 2000,
-                'stok_saat_ini' => 2600,
-                'keterangan' => 'Bahan daur ulang kelas menengah',
-            ],
-            [
-                'nama_barang' => 'PVC Recycled Mix',
-                'kode_barang' => 'PVC-RM',
-                'satuan' => 'kg',
-                'stok_minimum' => 800,
-                'stok_saat_ini' => 650, // Di bawah minimum
-                'keterangan' => 'Bahan campuran murah untuk cetakan bawah',
-            ],
-            [
-                'nama_barang' => 'PVC Serbuk Warna',
-                'kode_barang' => 'PVC-SW',
-                'satuan' => 'kg',
-                'stok_minimum' => 1500,
-                'stok_saat_ini' => 3200,
-                'keterangan' => 'Pewarna bubuk khusus PVC',
-            ],
-            [
-                'nama_barang' => 'PVC Hardener Cair',
-                'kode_barang' => 'PVC-HS',
-                'satuan' => 'ltr',
-                'stok_minimum' => 300,
-                'stok_saat_ini' => 420,
-                'keterangan' => 'Pengeras adonan outsole cetak',
-            ],
-            [
-                'nama_barang' => 'Plasticizer DO',
-                'kode_barang' => 'PVC-PL',
-                'satuan' => 'ltr',
-                'stok_minimum' => 500,
-                'stok_saat_ini' => 890,
-                'keterangan' => 'Cairan pelunak adonan tali jepit elastis',
-            ]
+            ['kode_barang' => 'TJ-PD-PTH', 'kategori' => 'Tali Jepit', 'jenis' => 'Pria Dewasa',   'warna' => 'Putih', 'stok_saat_ini' => 240],
+            ['kode_barang' => 'TJ-PD-MRH', 'kategori' => 'Tali Jepit', 'jenis' => 'Pria Dewasa',   'warna' => 'Merah', 'stok_saat_ini' => 180],
+            ['kode_barang' => 'TJ-PD-HTM', 'kategori' => 'Tali Jepit', 'jenis' => 'Pria Dewasa',   'warna' => 'Hitam', 'stok_saat_ini' => 210],
+            ['kode_barang' => 'TJ-WD-PTH', 'kategori' => 'Tali Jepit', 'jenis' => 'Wanita Dewasa', 'warna' => 'Putih', 'stok_saat_ini' => 190],
+            ['kode_barang' => 'TJ-WD-MRH', 'kategori' => 'Tali Jepit', 'jenis' => 'Wanita Dewasa', 'warna' => 'Merah', 'stok_saat_ini' => 170],
+            ['kode_barang' => 'TJ-WD-HTM', 'kategori' => 'Tali Jepit', 'jenis' => 'Wanita Dewasa', 'warna' => 'Hitam', 'stok_saat_ini' => 160],
+            ['kode_barang' => 'TJ-UP-BRU', 'kategori' => 'Tali Jepit', 'jenis' => 'Upin',           'warna' => 'Biru',  'stok_saat_ini' => 120],
+            ['kode_barang' => 'TJ-IP-PNK', 'kategori' => 'Tali Jepit', 'jenis' => 'Ipin',           'warna' => 'Pink',  'stok_saat_ini' => 110],
         ];
+
+        $barangData = array_map(fn ($barang) => [
+            ...$barang,
+            'nama_barang' => "{$barang['jenis']} - {$barang['warna']}",
+            'satuan' => 'kodi',
+            'stok_minimum' => 25,
+            'keterangan' => null,
+        ], $barangData);
 
         $barangs = [];
         foreach ($barangData as $b) {
             $barangs[$b['kode_barang']] = BarangPvc::create($b);
         }
 
-        // 6. Seed Barang Masuk (Pemasokan)
+        // 6. Contoh hasil cetak yang masuk ke gudang.
         $incomingData = [
-            [
-                'kode_barang' => 'PVC-CW',
-                'tanggal' => Carbon::now()->subDays(2)->toDateString(),
-                'jumlah' => 500,
-                'pemasok' => 'CV. Karya Plastik',
-                'keterangan' => 'Penerimaan rutin bulanan',
-            ],
-            [
-                'kode_barang' => 'PVC-RT',
-                'tanggal' => Carbon::now()->subDays(3)->toDateString(),
-                'jumlah' => 300,
-                'pemasok' => 'PT. Maju Bersama',
-                'keterangan' => 'Pemesanan khusus transparan',
-            ],
-            [
-                'kode_barang' => 'PVC-SW',
-                'tanggal' => Carbon::now()->subDays(3)->toDateString(),
-                'jumlah' => 200,
-                'pemasok' => 'CV. Karya Plastik',
-                'keterangan' => 'Pewarna merah dan kuning',
-            ],
-            [
-                'kode_barang' => 'PVC-PL',
-                'tanggal' => Carbon::now()->subDays(4)->toDateString(),
-                'jumlah' => 400,
-                'pemasok' => 'PT. Indo Kimia',
-                'keterangan' => 'Drum pelunak tambahan',
-            ]
+            ['kode_barang' => 'TJ-PD-PTH', 'jumlah' => 100],
+            ['kode_barang' => 'TJ-WD-MRH', 'jumlah' => 100],
+            ['kode_barang' => 'TJ-UP-BRU', 'jumlah' => 50],
         ];
 
         foreach ($incomingData as $in) {
             $kb = $in['kode_barang'];
             unset($in['kode_barang']);
             $in['id_barang'] = $barangs[$kb]->id;
+            $in['tanggal'] = Carbon::now()->toDateString();
+            $in['keterangan'] = 'Hasil cetak harian';
             BarangMasuk::create($in);
         }
 
-        // 7. Seed Barang Keluar (Produksi)
+        // 7. Contoh pengiriman barang jadi kepada pelanggan.
         $outgoingData = [
-            [
-                'kode_barang' => 'PVC-CW',
-                'tanggal' => Carbon::now()->subDays(1)->toDateString(),
-                'jumlah' => 120,
-                'tujuan_penggunaan' => 'Lini Produksi A',
-                'keterangan' => 'Cetak Outsole Tipe 01',
-            ],
-            [
-                'kode_barang' => 'PVC-RT',
-                'tanggal' => Carbon::now()->subDays(1)->toDateString(),
-                'jumlah' => 80,
-                'tujuan_penggunaan' => 'Lini Produksi B',
-                'keterangan' => 'Outsole Transparan Premium',
-            ],
-            [
-                'kode_barang' => 'PVC-GA',
-                'tanggal' => Carbon::now()->subDays(2)->toDateString(),
-                'jumlah' => 150,
-                'tujuan_penggunaan' => 'Lini Produksi C',
-                'keterangan' => 'Cetak outsole abu-abu daur ulang',
-            ]
+            ['kode_barang' => 'TJ-PD-PTH', 'jumlah' => 40, 'tujuan_penggunaan' => 'Toko Sandal Jaya'],
+            ['kode_barang' => 'TJ-WD-MRH', 'jumlah' => 30, 'tujuan_penggunaan' => 'Toko Sandal Jaya'],
         ];
 
         foreach ($outgoingData as $out) {
             $kb = $out['kode_barang'];
             unset($out['kode_barang']);
             $out['id_barang'] = $barangs[$kb]->id;
+            $out['tanggal'] = Carbon::now()->subDay()->toDateString();
+            $out['keterangan'] = 'Pengiriman barang jadi';
             BarangKeluar::create($out);
         }
-
-        // 8. Seed Notifikasi Stok (Untuk barang yang di bawah minimum)
-        NotifikasiStok::create([
-            'id_barang' => $barangs['PVC-FH']->id,
-            'pesan' => 'Stok PVC Flex Hitam kritis (800 kg / min 1.200 kg)',
-            'tanggal' => Carbon::now()->subDays(1)->toDateString(),
-            'is_read' => false,
-        ]);
-
-        NotifikasiStok::create([
-            'id_barang' => $barangs['PVC-RM']->id,
-            'pesan' => 'Stok PVC Recycled Mix kritis (650 kg / min 800 kg)',
-            'tanggal' => Carbon::now()->subDays(1)->toDateString(),
-            'is_read' => false,
-        ]);
     }
 }

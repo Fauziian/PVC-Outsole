@@ -11,6 +11,24 @@ use Exception;
 
 class StockService
 {
+    public function recordIncomingBatch(array $items): void
+    {
+        DB::transaction(function () use ($items) {
+            foreach ($items as $data) {
+                $this->recordIncoming($data);
+            }
+        });
+    }
+
+    public function recordOutgoingBatch(array $items): void
+    {
+        DB::transaction(function () use ($items) {
+            foreach ($items as $data) {
+                $this->recordOutgoing($data);
+            }
+        });
+    }
+
     /**
      * Catat barang masuk dan tambahkan ke stok saat ini.
      */
@@ -24,7 +42,7 @@ class StockService
                 'id_barang' => $barang->id,
                 'tanggal' => $data['tanggal'],
                 'jumlah' => $data['jumlah'],
-                'pemasok' => $data['pemasok'],
+                'pemasok' => $data['pemasok'] ?? null,
                 'keterangan' => $data['keterangan'] ?? null,
             ]);
 

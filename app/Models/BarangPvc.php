@@ -22,6 +22,9 @@ class BarangPvc extends Model
     protected $fillable = [
         'nama_barang',
         'kode_barang',
+        'kategori',
+        'jenis',
+        'warna',
         'satuan',
         'stok_minimum',
         'stok_saat_ini',

@@ -1,291 +1,39 @@
 import React, { useState } from "react";
+import { Head, router } from "@inertiajs/react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
-import { Head, useForm, router } from "@inertiajs/react";
-import { Plus, Search, X, Check, Truck } from "lucide-react";
 
-interface BarangPvc {
-  id: number;
-  nama_barang: string;
-  kode_barang: string;
-  satuan: string;
-}
+interface Product { id:number; kategori:string; jenis:string; warna:string }
+interface Line { id_barang:number|string; tanggal:string; jumlah:number; keterangan:string }
+interface Props { transactions:any; barang_list:Product[]; filters:{search?:string} }
 
-interface Transaction {
-  id: number;
-  tanggal: string;
-  jumlah: number;
-  pemasok: string;
-  keterangan?: string;
-  barang_pvc: {
-    nama_barang: string;
-    kode_barang: string;
-    satuan: string;
-  };
-}
+export default function Incoming({ transactions, barang_list, filters }: Props) {
+  const now = new Date();
+  const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const empty = ():Line => ({ id_barang: barang_list[0]?.id || "", tanggal: today, jumlah: 1, keterangan: "" });
+  const [search,setSearch] = useState(filters.search || "");
+  const [lines,setLines] = useState<Line[]>([empty()]);
+  const [processing,setProcessing] = useState(false);
+  const update = (i:number,key:keyof Line,value:any) => setLines(v => v.map((x,n) => n===i ? {...x,[key]:value}:x));
+  const save = (e:React.FormEvent) => { e.preventDefault(); setProcessing(true); router.post(route("stock.incoming.store"), {items:lines} as any, {onFinish:()=>setProcessing(false),onSuccess:()=>setLines([empty()])}); };
 
-interface IncomingProps {
-  transactions: {
-    data: Transaction[];
-    links: any[];
-    current_page: number;
-    last_page: number;
-    total: number;
-  };
-  barang_list: BarangPvc[];
-  filters: {
-    search?: string;
-  };
-}
-
-export default function Incoming({ transactions, barang_list, filters }: IncomingProps) {
-  const [search, setSearch] = useState(filters.search || "");
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const { data, setData, post, errors, reset, processing } = useForm({
-    id_barang: barang_list[0]?.id || "",
-    tanggal: new Date().toISOString().split("T")[0],
-    jumlah: 100,
-    pemasok: "",
-    keterangan: "",
-  });
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.get(route("stock.incoming"), { search }, { preserveState: true });
-  };
-
-  const openLogModal = () => {
-    reset();
-    setModalOpen(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    post(route("stock.incoming.store"), {
-      onSuccess: () => {
-        setModalOpen(false);
-        reset();
-      }
-    });
-  };
-
-  return (
-    <SumberPvcLayout>
-      <Head title="Pencatatan Barang Masuk" />
-
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-800">Transaksi Barang Masuk (Restock)</h1>
-          <p className="text-xs text-slate-400">Catat suplai masuk bahan baku PVC Compound dari pemasok untuk memperbarui stok gudang secara otomatis.</p>
-        </div>
-        <button
-          onClick={openLogModal}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-500/10 transition-all cursor-pointer self-start"
-        >
-          <Plus size={14} />
-          Catat Suplai Masuk
-        </button>
-      </div>
-
-      {/* SEARCH AND FILTER */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari pemasok atau nama bahan..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          />
-        </form>
-      </div>
-
-      {/* TABLE */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                <th className="px-6 py-4">ID Transaksi</th>
-                <th className="px-6 py-4">Bahan Baku</th>
-                <th className="px-6 py-4">Tanggal Terima</th>
-                <th className="px-6 py-4">Jumlah Penerimaan</th>
-                <th className="px-6 py-4">Pemasok</th>
-                <th className="px-6 py-4">Verifikator Gudang</th>
-                <th className="px-6 py-4">Keterangan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 text-xs">
-              {transactions.data.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400">
-                    Tidak ada transaksi suplai masuk yang tercatat.
-                  </td>
-                </tr>
-              ) : (
-                transactions.data.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-4">
-                      <span className="font-mono font-bold text-slate-700">
-                        BM-{String(t.id).padStart(4, "0")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-slate-800">{t.barang_pvc.nama_barang}</p>
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">{t.barang_pvc.kode_barang}</p>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 font-semibold">{t.tanggal}</td>
-                    <td className="px-6 py-4 text-emerald-600 font-black">
-                      +{t.jumlah} {t.barang_pvc.satuan}
-                    </td>
-                    <td className="px-6 py-4 text-slate-700 font-semibold">{t.pemasok}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">
-                        <Check size={10} /> DITERIMA
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-400 max-w-xs truncate">{t.keterangan || "-"}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* PAGINATION */}
-        {transactions.total > 10 && (
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-            <span className="text-xs text-slate-400">
-              Menampilkan {transactions.data.length} dari {transactions.total} transaksi
-            </span>
-            <div className="flex gap-2">
-              {transactions.links.map((link: any, idx: number) => (
-                <button
-                  key={idx}
-                  onClick={() => link.url && router.get(link.url)}
-                  disabled={!link.url || link.active}
-                  className={`px-3 py-1.5 text-xs font-bold rounded ${
-                    link.active 
-                      ? "bg-blue-600 text-white" 
-                      : "border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 disabled:opacity-40"
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: link.label }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* FORM MODAL */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setModalOpen(false)} />
-          <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
-            
-            <div className="flex items-center gap-2.5 px-6 py-4 border-b border-slate-100 text-slate-800">
-              <Truck className="text-blue-600" size={18} />
-              <h2 className="text-sm font-bold">Catat Transaksi Suplai Masuk</h2>
-              <button onClick={() => setModalOpen(false)} className="ml-auto w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-colors">
-                <X size={15} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-slate-700">
-              
-              {/* Bahan baku */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bahan Baku PVC</label>
-                <select
-                  value={data.id_barang}
-                  onChange={(e) => setData("id_barang", e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white font-semibold"
-                >
-                  {barang_list.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.nama_barang} ({b.kode_barang}) - Satuan: {b.satuan}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Tanggal & Jumlah */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tanggal Diterima</label>
-                  <input
-                    type="date"
-                    required
-                    value={data.tanggal}
-                    onChange={(e) => setData("tanggal", e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kuantitas Masuk</label>
-                  <input
-                    type="number"
-                    required
-                    value={data.jumlah}
-                    onChange={(e) => setData("jumlah", Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold"
-                  />
-                  {errors.jumlah && <span className="text-[10px] text-red-500">{errors.jumlah}</span>}
-                </div>
-              </div>
-
-              {/* Pemasok */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Pemasok (Supplier)</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: PT. Maju Jaya Resin..."
-                  value={data.pemasok}
-                  onChange={(e) => setData("pemasok", e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold"
-                />
-                {errors.pemasok && <span className="text-[10px] text-red-500">{errors.pemasok}</span>}
-              </div>
-
-              {/* Keterangan */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Keterangan Tambahan</label>
-                <textarea
-                  placeholder="Nomor DO, kondisi plastik bungkus..."
-                  value={data.keterangan}
-                  onChange={(e) => setData("keterangan", e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none resize-none font-medium"
-                />
-              </div>
-
-              {/* Submit */}
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={processing}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-blue-600/10"
-                >
-                  Catat Penerimaan
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      )}
-
-    </SumberPvcLayout>
-  );
+  return <SumberPvcLayout>
+    <Head title="Barang Masuk" />
+    <div><h1 className="text-xl font-bold text-slate-800">Barang Masuk Hasil Cetak</h1><p className="text-xs text-slate-400">Catat produk jadi yang masuk ke gudang. Semua jumlah menggunakan kodi.</p></div>
+    <form onSubmit={save} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+      <div className="flex justify-between items-center gap-3"><h2 className="text-sm font-bold text-slate-800">Daftar Hasil Cetak Hari Ini</h2><button type="button" onClick={()=>setLines(v=>[...v,empty()])} className="flex items-center gap-2 px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold"><Plus size={14}/>Tambah Produk</button></div>
+      <div className="space-y-3">{lines.map((line,i)=><div key={i} className="grid grid-cols-1 md:grid-cols-[1fr_150px_120px_1fr_36px] gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+        <select required value={line.id_barang} onChange={e=>update(i,"id_barang",Number(e.target.value))} className="rounded-lg border-slate-200 text-xs">{barang_list.map(p=><option key={p.id} value={p.id}>{p.kategori} — {p.jenis} — {p.warna}</option>)}</select>
+        <input required type="date" value={line.tanggal} onChange={e=>update(i,"tanggal",e.target.value)} className="rounded-lg border-slate-200 text-xs"/>
+        <div className="relative"><input required min="1" type="number" value={line.jumlah} onChange={e=>update(i,"jumlah",Number(e.target.value))} className="w-full rounded-lg border-slate-200 pr-12 text-xs"/><span className="absolute right-2 top-2.5 text-[10px] text-slate-400">kodi</span></div>
+        <input value={line.keterangan} onChange={e=>update(i,"keterangan",e.target.value)} placeholder="Keterangan (opsional)" className="rounded-lg border-slate-200 text-xs"/>
+        <button type="button" onClick={()=>setLines(v=>v.length===1?v:v.filter((_,n)=>n!==i))} className="text-red-500 flex justify-center items-center"><Trash2 size={15}/></button>
+      </div>)}</div>
+      <div className="flex justify-end"><button disabled={processing||!barang_list.length} className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-bold disabled:opacity-50">Simpan Semua ({lines.length} produk)</button></div>
+    </form>
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <form onSubmit={e=>{e.preventDefault();router.get(route("stock.incoming"),{search},{preserveState:true})}} className="p-4 border-b relative max-w-sm"><Search size={14} className="absolute left-7 top-7 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cari produk..." className="w-full pl-9 rounded-lg border-slate-200 text-xs"/></form>
+      <div className="overflow-x-auto"><table className="w-full text-xs"><thead className="bg-slate-50 text-slate-400 uppercase text-[10px]"><tr><th className="p-4 text-left">Transaksi</th><th className="p-4 text-left">Produk</th><th className="p-4 text-left">Tanggal</th><th className="p-4 text-left">Jumlah</th><th className="p-4 text-left">Keterangan</th></tr></thead><tbody className="divide-y">{transactions.data.map((t:any)=><tr key={t.id}><td className="p-4 font-mono">BM-{String(t.id).padStart(4,"0")}</td><td className="p-4 font-semibold">{t.barang_pvc.kategori} — {t.barang_pvc.jenis} — {t.barang_pvc.warna}</td><td className="p-4">{String(t.tanggal).slice(0,10)}</td><td className="p-4 font-bold text-green-600">+{t.jumlah} kodi</td><td className="p-4 text-slate-500">{t.keterangan||"-"}</td></tr>)}</tbody></table></div>
+    </div>
+  </SumberPvcLayout>;
 }

@@ -63,12 +63,6 @@ Route::middleware(['auth'])->group(function () {
 
     // 4. Modul Gudang / Stock (Role: warehouse)
     Route::middleware(['role:warehouse'])->group(function () {
-        // Stock Overview
-        Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
-        Route::post('/stock', [StockController::class, 'storeItem'])->name('stock.store');
-        Route::put('/stock/{item}', [StockController::class, 'updateItem'])->name('stock.update');
-        Route::delete('/stock/{item}', [StockController::class, 'destroyItem'])->name('stock.destroy');
-
         // Transaksi Barang Masuk
         Route::get('/stock/incoming', [StockController::class, 'incoming'])->name('stock.incoming');
         Route::post('/stock/incoming', [StockController::class, 'storeIncoming'])->name('stock.incoming.store');
@@ -77,13 +71,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stock/outgoing', [StockController::class, 'outgoing'])->name('stock.outgoing');
         Route::post('/stock/outgoing', [StockController::class, 'storeOutgoing'])->name('stock.outgoing.store');
 
-        // Notifikasi Stok
-        Route::get('/stock/notifications', [StockController::class, 'notifications'])->name('stock.notifications');
-        Route::put('/stock/notifications/{notification}/read', [StockController::class, 'markAsRead'])->name('stock.notifications.read');
-        Route::post('/stock/notifications/read-all', [StockController::class, 'readAllNotifications'])->name('stock.notifications.read-all');
-
-        // Laporan Gudang (Unduh Excel)
-        Route::get('/reports/stock/excel', [ReportController::class, 'exportStockExcel'])->name('reports.stock.excel');
     });
 
     // 5. Modul Manajemen (Role: management)
@@ -96,7 +83,7 @@ Route::middleware(['auth'])->group(function () {
 
     // 6. Laporan Index page (Aksesible untuk HR, Warehouse, Management)
     Route::get('/reports', [ReportController::class, 'index'])
-        ->middleware(['role:hr,warehouse,management'])
+        ->middleware(['role:hr,management'])
         ->name('reports.index');
 
     // Profile standard breeze routes

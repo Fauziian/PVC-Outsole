@@ -75,12 +75,7 @@ class DashboardController extends Controller
                 'stok_kritis' => BarangPvc::whereRaw('stok_saat_ini <= stok_minimum')->count(),
             ];
 
-            // Notifikasi Stok Kritis yang Belum Dibaca
-            $data['notifikasi_kritis'] = NotifikasiStok::with('barangPvc')
-                ->where('is_read', false)
-                ->orderBy('tanggal', 'desc')
-                ->take(5)
-                ->get();
+            $data['notifikasi_kritis'] = [];
 
             // Riwayat transaksi gudang terbaru
             $data['recent_masuk'] = BarangMasuk::with('barangPvc')
@@ -125,7 +120,7 @@ class DashboardController extends Controller
         }
 
         // Shared logs aktivitas
-        $data['aktifitas_terbaru'] = $this->getRecentActivities();
+        $data['aktifitas_terbaru'] = $this->getRecentActivities($role);
 
         return Inertia::render('Dashboard', $data);
     }
@@ -133,7 +128,7 @@ class DashboardController extends Controller
     /**
      * Dapatkan log aktivitas terbaru secara global untuk feed dashboard.
      */
-    private function getRecentActivities(): array
+    private function getRecentActivities(string $role): array
     {
         $activities = [];
 
@@ -143,7 +138,7 @@ class DashboardController extends Controller
             $activities[] = [
                 'id' => 'BM-' . $m->id,
                 'type' => 'stock',
-                'text' => "Penerimaan {$m->jumlah} {$m->barangPvc->satuan} {$m->barangPvc->nama_barang} dari {$m->pemasok}",
+                'text' => "Hasil cetak {$m->barangPvc->jenis} warna {$m->barangPvc->warna} masuk {$m->jumlah} kodi",
                 'time' => $m->created_at->diffForHumans(),
                 'timestamp' => $m->created_at->timestamp,
             ];
@@ -155,10 +150,15 @@ class DashboardController extends Controller
             $activities[] = [
                 'id' => 'BK-' . $k->id,
                 'type' => 'stock',
-                'text' => "Pengeluaran {$k->jumlah} {$k->barangPvc->satuan} {$k->barangPvc->nama_barang} untuk {$k->tujuan_penggunaan}",
+                'text' => "Pengiriman {$k->barangPvc->jenis} warna {$k->barangPvc->warna} sebanyak {$k->jumlah} kodi ke {$k->tujuan_penggunaan}",
                 'time' => $k->created_at->diffForHumans(),
                 'timestamp' => $k->created_at->timestamp,
             ];
+        }
+
+        if ($role === 'warehouse') {
+            usort($activities, fn ($a, $b) => $b['timestamp'] <=> $a['timestamp']);
+            return array_slice($activities, 0, 6);
         }
 
         // 3. Aktivitas Karyawan Baru
