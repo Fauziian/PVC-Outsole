@@ -66,7 +66,7 @@ class StockController extends Controller
             return $item;
         });
 
-        return Inertia::render('Stock/Index', [
+        return Inertia::render('Stock/Available', [
             'items' => $items,
             'filters' => $request->only(['search', 'status']),
         ]);

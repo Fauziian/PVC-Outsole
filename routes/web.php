@@ -64,6 +64,9 @@ Route::middleware(['auth'])->group(function () {
 
     // 4. Modul Gudang / Stock (Role: warehouse)
     Route::middleware(['role:warehouse'])->group(function () {
+        // Daftar stok barang jadi yang tersedia
+        Route::get('/stock/available', [StockController::class, 'index'])->name('stock.available');
+
         // Transaksi Barang Masuk
         Route::get('/stock/incoming', [StockController::class, 'incoming'])->name('stock.incoming');
         Route::post('/stock/incoming', [StockController::class, 'storeIncoming'])->name('stock.incoming.store');

@@ -32,6 +32,7 @@ const navByRole: Record<Role, NavItem[]> = {
   ],
   warehouse: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
+    { id: "available", label: "Stok Barang Tersedia", icon: Package, route: "stock.available" },
     { id: "incoming", label: "Barang Masuk", icon: Package, route: "stock.incoming" },
     { id: "outgoing", label: "Barang Keluar", icon: Package, route: "stock.outgoing" },
     { id: "weekly-report", label: "Laporan Mingguan/Bulanan", icon: BarChart2, route: "stock.weekly-report" },
