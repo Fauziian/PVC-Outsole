@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
 import { Head, Link } from "@inertiajs/react";
 import { 
@@ -42,6 +42,10 @@ export default function Dashboard({
   const initials = (name: string) => {
     return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
   };
+  const [stockCategory, setStockCategory] = useState("Semua");
+  const dashboardStock = stok_tersedia
+    .filter(barang => stockCategory === "Semua" || barang.kategori === stockCategory)
+    .slice(0, 5);
 
   return (
     <SumberPvcLayout>
@@ -155,14 +159,22 @@ export default function Dashboard({
           {role === "warehouse" && (
             <div className="space-y-6">
               <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold text-slate-800">Stok Barang Tersedia</h3>
-                    <p className="mt-0.5 text-[10px] text-slate-400">Jumlah stok saat ini dalam satuan kodi.</p>
+                    <p className="mt-0.5 text-[10px] text-slate-400">Menampilkan maksimal 5 produk dalam satuan kodi.</p>
                   </div>
-                  <Link href={route("stock.incoming")} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-                    Barang Masuk <ArrowRight size={13} />
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <select value={stockCategory} onChange={event => setStockCategory(event.target.value)} className="rounded-lg border-slate-200 py-1.5 text-xs font-semibold text-slate-600">
+                      <option value="Semua">Semua Kategori</option>
+                      <option value="Tali Jepit">Tali Jepit</option>
+                      <option value="Boloni Gunung">Boloni Gunung</option>
+                      <option value="Outsole">Outsole</option>
+                    </select>
+                    <Link href={route("stock.available")} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                      Lihat Semua <ArrowRight size={13} />
+                    </Link>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -175,9 +187,9 @@ export default function Dashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 text-xs">
-                      {stok_tersedia.length === 0 ? (
+                      {dashboardStock.length === 0 ? (
                         <tr><td colSpan={4} className="py-4 text-center text-slate-400">Belum ada data stok.</td></tr>
-                      ) : stok_tersedia.map((barang) => {
+                      ) : dashboardStock.map((barang) => {
                         const aman = barang.stok_saat_ini > barang.stok_minimum;
                         const label = barang.jenis || barang.kategori;
                         return <tr key={barang.id} className="hover:bg-slate-50/50">
