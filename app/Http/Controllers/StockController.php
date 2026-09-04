@@ -80,14 +80,15 @@ class StockController extends Controller
         $validated = $request->validate([
             'nama_barang' => ['required', 'string', 'max:255'],
             'kode_barang' => ['required', 'string', 'unique:barang_pvc,kode_barang', 'max:50'],
-            'kategori' => ['required', 'in:Tali Jepit,Outsole'],
-            'jenis' => ['required', 'string', 'max:100'],
-            'warna' => ['required', 'string', 'max:100'],
+            'kategori' => ['required', 'in:Tali Jepit,Outsole,Boloni Gunung'],
+            'jenis' => ['nullable', 'string', 'max:100'],
+            'warna' => ['nullable', 'string', 'max:100'],
             'stok_minimum' => ['required', 'integer', 'min:0'],
             'stok_saat_ini' => ['required', 'integer', 'min:0'],
             'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $this->normalizeProductVariant($validated, $request);
         $validated['satuan'] = 'kodi';
         BarangPvc::create($validated);
 
@@ -102,13 +103,14 @@ class StockController extends Controller
         $validated = $request->validate([
             'nama_barang' => ['required', 'string', 'max:255'],
             'kode_barang' => ['required', 'string', 'max:50', 'unique:barang_pvc,kode_barang,' . $item->id],
-            'kategori' => ['required', 'in:Tali Jepit,Outsole'],
-            'jenis' => ['required', 'string', 'max:100'],
-            'warna' => ['required', 'string', 'max:100'],
+            'kategori' => ['required', 'in:Tali Jepit,Outsole,Boloni Gunung'],
+            'jenis' => ['nullable', 'string', 'max:100'],
+            'warna' => ['nullable', 'string', 'max:100'],
             'stok_minimum' => ['required', 'integer', 'min:0'],
             'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $this->normalizeProductVariant($validated, $request);
         $item->update($validated);
 
         return redirect()->back()->with('success', 'Data produk berhasil diperbarui.');
@@ -126,6 +128,23 @@ class StockController extends Controller
 
         $item->delete();
         return redirect()->back()->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /** Terapkan struktur varian masing-masing kategori barang jadi. */
+    private function normalizeProductVariant(array &$validated, Request $request): void
+    {
+        if ($validated['kategori'] === 'Outsole') {
+            $request->validate(['jenis' => ['required', 'string', 'max:100']]);
+            $validated['warna'] = null;
+        } elseif ($validated['kategori'] === 'Boloni Gunung') {
+            $request->validate(['warna' => ['required', 'string', 'max:100']]);
+            $validated['jenis'] = null;
+        } else {
+            $request->validate([
+                'jenis' => ['required', 'string', 'max:100'],
+                'warna' => ['required', 'string', 'max:100'],
+            ]);
+        }
     }
 
     /**

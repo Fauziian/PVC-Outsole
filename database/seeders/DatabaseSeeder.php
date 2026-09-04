@@ -259,11 +259,16 @@ class DatabaseSeeder extends Seeder
             ['kode_barang' => 'TJ-WD-HTM', 'kategori' => 'Tali Jepit', 'jenis' => 'Wanita Dewasa', 'warna' => 'Hitam', 'stok_saat_ini' => 160],
             ['kode_barang' => 'TJ-UP-BRU', 'kategori' => 'Tali Jepit', 'jenis' => 'Upin',           'warna' => 'Biru',  'stok_saat_ini' => 120],
             ['kode_barang' => 'TJ-IP-PNK', 'kategori' => 'Tali Jepit', 'jenis' => 'Ipin',           'warna' => 'Pink',  'stok_saat_ini' => 110],
+            ['kode_barang' => 'OS-UTAMA', 'kategori' => 'Outsole', 'jenis' => 'Outsole', 'warna' => null, 'stok_saat_ini' => 120],
+            ['kode_barang' => 'BG-MRH', 'kategori' => 'Boloni Gunung', 'jenis' => null, 'warna' => 'Merah', 'stok_saat_ini' => 80],
+            ['kode_barang' => 'BG-PTH', 'kategori' => 'Boloni Gunung', 'jenis' => null, 'warna' => 'Putih', 'stok_saat_ini' => 100],
         ];
 
         $barangData = array_map(fn ($barang) => [
             ...$barang,
-            'nama_barang' => "{$barang['jenis']} - {$barang['warna']}",
+            'nama_barang' => $barang['kategori'] === 'Outsole'
+                ? $barang['jenis']
+                : ($barang['jenis'] ? "{$barang['jenis']} - {$barang['warna']}" : "{$barang['kategori']} - {$barang['warna']}"),
             'satuan' => 'kodi',
             'stok_minimum' => 25,
             'keterangan' => null,
