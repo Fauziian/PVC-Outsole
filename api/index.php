@@ -5,10 +5,6 @@
  * Handles /tmp storage setup and bootstraps Laravel directly.
  */
 
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
-
 define('LARAVEL_START', microtime(true));
 
 // Register the Composer autoloader from vendor (installed by vercel-php builder)
@@ -60,36 +56,25 @@ if ($dbConnection === 'sqlite') {
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-try {
-    // Bootstrap Laravel application
-    /** @var Application $app */
-    $app = require_once __DIR__ . '/../bootstrap/app.php';
+// Bootstrap Laravel application
+/** @var Application $app */
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 
-    // Override storage path to /tmp for Vercel serverless
-    $app->useStoragePath('/tmp/storage');
+// Override storage path to /tmp for Vercel serverless
+$app->useStoragePath('/tmp/storage');
 
-    // Some serverless PHP workers report the app as bootstrapped before the
-    // framework bindings exist. Bootstrap the Laravel stack explicitly there.
-    if (! $app->bound('config') || ! $app->bound('view')) {
-        $app->bootstrapWith([
-            \Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
-            \Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
-            \Illuminate\Foundation\Bootstrap\HandleExceptions::class,
-            \Illuminate\Foundation\Bootstrap\RegisterFacades::class,
-            \Illuminate\Foundation\Bootstrap\RegisterProviders::class,
-            \Illuminate\Foundation\Bootstrap\BootProviders::class,
-        ]);
-    }
-
-    // Handle the HTTP request
-    $app->handleRequest(Request::capture());
-} catch (Throwable $exception) {
-    if (($_GET['diagnostic'] ?? '') === 'warehouse-2026') {
-        header('Content-Type: text/plain; charset=UTF-8');
-        echo get_class($exception) . ': ' . $exception->getMessage() . "\n";
-        echo $exception->getFile() . ':' . $exception->getLine() . "\n";
-        echo $exception->getTraceAsString();
-    }
-
-    throw $exception;
+// Some serverless PHP workers report the app as bootstrapped before the
+// framework bindings exist. Bootstrap the Laravel stack explicitly there.
+if (! $app->bound('config') || ! $app->bound('view')) {
+    $app->bootstrapWith([
+        \Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
+        \Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
+        \Illuminate\Foundation\Bootstrap\HandleExceptions::class,
+        \Illuminate\Foundation\Bootstrap\RegisterFacades::class,
+        \Illuminate\Foundation\Bootstrap\RegisterProviders::class,
+        \Illuminate\Foundation\Bootstrap\BootProviders::class,
+    ]);
 }
+
+// Handle the HTTP request
+$app->handleRequest(Request::capture());
