@@ -21,7 +21,8 @@ export default function ProductVariantFields({ products, value, onChange, showSt
   const selected = products.find(product => product.id === Number(value)) ?? products[0];
   const categories = unique(products.map(product => product.kategori));
   const types = unique(products.filter(product => product.kategori === selected?.kategori).map(product => product.jenis));
-  const colors = unique(products.filter(product => product.kategori === selected?.kategori && product.jenis === selected?.jenis).map(product => product.warna));
+  const colorProducts = products.filter(product => product.kategori === selected?.kategori && product.jenis === selected?.jenis);
+  const colors = unique(colorProducts.map(product => product.warna));
 
   const choose = (kategori: string, jenis?: string, warna?: string) => {
     const candidates = products.filter(product => product.kategori === kategori);
@@ -46,10 +47,13 @@ export default function ProductVariantFields({ products, value, onChange, showSt
     </label>
     <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">
       Warna
-      <select required value={selected?.warna ?? ""} onChange={event => choose(selected.kategori, selected.jenis, event.target.value)} className="block w-full rounded-lg border-slate-200 text-xs font-normal normal-case">
-        {colors.map(color => <option key={color}>{color}</option>)}
+      <select required value={selected?.warna ?? ""} onChange={event => choose(selected.kategori, selected.jenis, event.target.value)} className={`block w-full rounded-lg border-slate-200 text-xs font-semibold normal-case ${showStock ? ((selected?.stok_saat_ini ?? 0) > 0 ? "text-green-600" : "text-red-600") : "text-slate-700"}`}>
+        {colors.map(color => {
+          const product = colorProducts.find(item => item.warna === color);
+          const stock = product?.stok_saat_ini ?? 0;
+          return <option key={color} value={color} style={{ color: stock > 0 ? "#16a34a" : "#dc2626" }}>{showStock ? `${color} — ${stock} kodi` : color}</option>;
+        })}
       </select>
-      {showStock && <span className="block text-[9px] font-normal normal-case text-slate-400">Stok: {selected?.stok_saat_ini ?? 0} kodi</span>}
     </label>
   </>;
 }
