@@ -16,6 +16,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 // Ensure required /tmp directories exist (Vercel has read-only filesystem)
 $vercelTmpDirs = [
+    '/tmp/bootstrap/cache',
     '/tmp/storage/framework/sessions',
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache/data',
@@ -26,6 +27,16 @@ foreach ($vercelTmpDirs as $dir) {
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
+}
+
+// Laravel may rebuild these manifests at runtime; Vercel's project tree is read-only.
+foreach ([
+    'APP_SERVICES_CACHE' => '/tmp/bootstrap/cache/services.php',
+    'APP_PACKAGES_CACHE' => '/tmp/bootstrap/cache/packages.php',
+] as $key => $value) {
+    putenv($key . '=' . $value);
+    $_ENV[$key] = $value;
+    $_SERVER[$key] = $value;
 }
 
 // If using SQLite, copy the database to /tmp to make it writable
