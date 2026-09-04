@@ -4,7 +4,7 @@ import { Plus, Search, Trash2 } from "lucide-react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
 import ProductVariantFields, { StockProduct } from "@/Components/ProductVariantFields";
 
-interface Line { id_barang:number|string; tanggal:string; jumlah:number; keterangan:string }
+interface Line { id_barang:number|string; tanggal:string; jumlah:number|string; keterangan:string }
 interface Props { transactions:any; barang_list:StockProduct[]; filters:{search?:string} }
 
 export default function Incoming({ transactions, barang_list, filters }: Props) {
@@ -25,7 +25,7 @@ export default function Incoming({ transactions, barang_list, filters }: Props) 
       <div className="space-y-3">{lines.map((line,i)=><div key={i} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[150px_180px_140px_145px_120px_1fr_36px] gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 items-end">
         <ProductVariantFields products={barang_list} value={line.id_barang} onChange={id=>update(i,"id_barang",id)}/>
         <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Tanggal<input required type="date" value={line.tanggal} onChange={e=>update(i,"tanggal",e.target.value)} className="block w-full rounded-lg border-slate-200 text-xs font-normal normal-case"/></label>
-        <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Jumlah<div className="relative"><input required min="1" type="number" value={line.jumlah} onChange={e=>update(i,"jumlah",Number(e.target.value))} className="w-full rounded-lg border-slate-200 pr-12 text-xs font-normal normal-case"/><span className="absolute right-2 top-2.5 text-[10px] text-slate-400">kodi</span></div></label>
+        <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Jumlah<div className="relative"><input required min="1" type="number" value={line.jumlah} onChange={e=>update(i,"jumlah",e.target.value === "" ? "" : Number(e.target.value))} className="w-full rounded-lg border-slate-200 pr-12 text-xs font-normal normal-case"/><span className="absolute right-2 top-2.5 text-[10px] text-slate-400">kodi</span></div></label>
         <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Keterangan<input value={line.keterangan} onChange={e=>update(i,"keterangan",e.target.value)} placeholder="Opsional" className="block w-full rounded-lg border-slate-200 text-xs font-normal normal-case"/></label>
         <button type="button" onClick={()=>setLines(v=>v.length===1?v:v.filter((_,n)=>n!==i))} className="text-red-500 flex justify-center items-center"><Trash2 size={15}/></button>
       </div>)}</div>

@@ -4,7 +4,7 @@ import { Plus, Search, Trash2 } from "lucide-react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
 import ProductVariantFields, { StockProduct } from "@/Components/ProductVariantFields";
 
-interface Line { id_barang:number|string; tanggal:string; jumlah:number; keterangan:string }
+interface Line { id_barang:number|string; tanggal:string; jumlah:number|string; keterangan:string }
 interface Props { transactions:any; barang_list:StockProduct[]; filters:{search?:string} }
 
 export default function Outgoing({transactions,barang_list,filters}:Props) {
@@ -23,7 +23,7 @@ export default function Outgoing({transactions,barang_list,filters}:Props) {
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-[180px_180px_1fr] items-start">
           <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Tanggal<input required type="date" value={line.tanggal} onChange={e=>update(i,"tanggal",e.target.value)} className="block w-full rounded-lg border-slate-200 text-xs font-normal normal-case"/></label>
-          <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Jumlah Keluar<div className="relative"><input required min="1" max={p?.stok_saat_ini} type="number" value={line.jumlah} onChange={e=>update(i,"jumlah",Number(e.target.value))} className="block w-full rounded-lg border-slate-200 pr-12 text-xs font-normal normal-case"/><span className="absolute right-3 top-2.5 text-[10px] font-normal normal-case text-slate-400">kodi</span></div><span className={`${(p?.stok_saat_ini ?? 0) > 0 ? "text-green-600" : "text-red-500"} text-[9px] font-semibold normal-case`}>Tersedia {p?.stok_saat_ini||0} kodi</span></label>
+          <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Jumlah Keluar<div className="relative"><input required min="1" max={p?.stok_saat_ini} type="number" value={line.jumlah} onChange={e=>update(i,"jumlah",e.target.value === "" ? "" : Number(e.target.value))} className="block w-full rounded-lg border-slate-200 pr-12 text-xs font-normal normal-case"/><span className="absolute right-3 top-2.5 text-[10px] font-normal normal-case text-slate-400">kodi</span></div><span className={`${(p?.stok_saat_ini ?? 0) > 0 ? "text-green-600" : "text-red-500"} text-[9px] font-semibold normal-case`}>Tersedia {p?.stok_saat_ini||0} kodi</span></label>
           <label className="space-y-1 text-[10px] font-bold uppercase text-slate-500">Keterangan<input value={line.keterangan} onChange={e=>update(i,"keterangan",e.target.value)} placeholder="Keterangan tambahan (opsional)" className="block w-full rounded-lg border-slate-200 text-xs font-normal normal-case"/></label>
         </div>
       </div>})}</div>
