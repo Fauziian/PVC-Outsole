@@ -171,7 +171,7 @@
                 <td>Upah Lembur ({{ number_format($payroll->jam_lembur, 2, ',', '.') }} jam)</td>
                 <td class="number-cell">Rp {{ number_format($payroll->insentif_lembur, 0, ',', '.') }}</td>
                 <td>Aturan Lembur</td>
-                <td class="number-cell">Setelah 8 jam</td>
+                <td class="number-cell">Mulai 14 jam</td>
             </tr>
             <tr>
                 <td>Jumlah Hari Tercatat</td>
@@ -204,7 +204,7 @@
     </table>
 
     <div class="note">
-        * Catatan: Gaji dihitung dari absensi terverifikasi. Delapan jam pertama per catatan adalah jam normal dan jam berikutnya adalah lembur; shift malam tetap dihitung pada tanggal mulai shift.
+        * Catatan: Gaji dihitung dari absensi terverifikasi. Durasi 8–13 jam adalah kerja reguler dan pilihan 14–15 jam adalah lembur.
     </div>
 
 </body>

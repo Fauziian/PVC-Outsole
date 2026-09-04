@@ -46,7 +46,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Kehadiran / Absensi
         Route::get('/attendance', [AbsensiController::class, 'index'])->name('attendance.index');
-        Route::post('/attendance', [AbsensiController::class, 'store'])->name('attendance.store');
+        Route::post('/attendance/check-in', [AbsensiController::class, 'checkIn'])->name('attendance.check-in');
+        Route::put('/attendance/{attendance}/check-out', [AbsensiController::class, 'checkOut'])->name('attendance.check-out');
         Route::delete('/attendance/{attendance}', [AbsensiController::class, 'destroy'])->name('attendance.destroy');
 
         // Komponen Gaji & Slip

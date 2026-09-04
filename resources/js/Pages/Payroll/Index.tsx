@@ -74,7 +74,7 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-800">Slip & Rekap Gaji Karyawan</h1>
-          <p className="text-xs text-slate-400 font-medium">Gaji bulanan dihitung dari jam absensi aktual: 8 jam normal, selebihnya lembur.</p>
+          <p className="text-xs text-slate-400 font-medium">Gaji bulanan dihitung dari durasi absensi aktual; lembur dimulai pada pilihan 14 jam.</p>
         </div>
 
         {/* Action Controls */}
@@ -105,7 +105,7 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
       {/* REKAP KEUANGAN BULANAN */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <RecapCard label="Total Gaji Dibuat" value={idr(stats.total_bersih)} detail="Akumulasi upah jam normal dan lembur" color="text-blue-600 bg-blue-50" />
-        <RecapCard label="Total Upah Lembur" value={idr(stats.total_insentif)} detail="Jam kerja setelah 8 jam per hari" color="text-indigo-600 bg-indigo-50" />
+        <RecapCard label="Total Upah Lembur" value={idr(stats.total_insentif)} detail="Durasi kerja 14–15 jam" color="text-indigo-600 bg-indigo-50" />
         <RecapCard label="Tarif Pabrik" value="Rp12rb / Rp17rb" detail="Berdasarkan masa kerja karyawan" color="text-amber-600 bg-amber-50" />
         <RecapCard label="Jumlah Slip Digenerate" value={`${stats.count} Slip`} detail={`Untuk periode aktif: ${periode}`} color="text-purple-600 bg-purple-50" />
       </div>

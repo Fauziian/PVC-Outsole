@@ -129,8 +129,8 @@ export default function Show({ payroll, setting }: ShowProps) {
                 
                 <div className="space-y-3 text-xs">
                   <ItemRow label={`Tarif kerja (${payroll.rincian.kategori_masa_kerja === "B" ? "≥5 tahun" : "<5 tahun"})`} val={`${idr(payroll.tarif_per_jam)} / jam`} />
-                  <ItemRow label={`Upah jam normal (${payroll.total_jam_normal} jam)`} val={idr(payroll.gaji_pokok)} sub="Maksimal 8 jam pada setiap absensi" />
-                  <ItemRow label={`Upah lembur (${payroll.jam_lembur} jam)`} val={idr(payroll.insentif_lembur)} sub="Jam ke-9 dan seterusnya" />
+                  <ItemRow label={`Upah kerja reguler (${payroll.total_jam_normal} jam)`} val={idr(payroll.gaji_pokok)} sub="Pilihan durasi 8 sampai 13 jam" />
+                  <ItemRow label={`Upah lembur (${payroll.jam_lembur} jam)`} val={idr(payroll.insentif_lembur)} sub="Dimulai pada pilihan 14 jam" />
 
                   <div className="border-t border-slate-100 pt-3 flex justify-between font-bold text-slate-800">
                     <span>Total Pendapatan Kotor</span>
@@ -141,7 +141,7 @@ export default function Show({ payroll, setting }: ShowProps) {
 
               <div className="space-y-4">
                 <h3 className="text-xs font-black text-slate-800 border-b border-slate-100 pb-2 uppercase tracking-wider text-violet-600">Aturan Perhitungan</h3>
-                <p className="text-xs leading-relaxed text-slate-500">Pergantian shift tidak mengubah tarif. Setiap catatan absensi membagi 8 jam pertama sebagai normal dan jam setelahnya sebagai lembur.</p>
+                <p className="text-xs leading-relaxed text-slate-500">Pergantian shift tidak mengubah tarif. Durasi 8–13 jam dicatat sebagai kerja reguler, sedangkan pilihan 14–15 jam menjadi lembur.</p>
               </div>
             </div>
 

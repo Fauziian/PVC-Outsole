@@ -14,8 +14,8 @@ class PayrollCalculationService
      * Menghitung gaji bulanan berdasarkan absensi aktual.
      *
      * Tidak ada gaji pokok atau persentase lembur: setiap jam kerja dibayar
-     * Rp12.000 (< 5 tahun) atau Rp17.000 (>= 5 tahun). Delapan jam pertama
-     * pada satu catatan adalah jam normal; sisanya adalah lembur.
+     * Rp12.000 (< 5 tahun) atau Rp17.000 (>= 5 tahun). Durasi 8--13 jam
+     * adalah kerja reguler; lembur dimulai pada pilihan 14 jam.
      */
     public function calculate(Karyawan $karyawan, string $periode): array
     {
@@ -31,15 +31,17 @@ class PayrollCalculationService
             ->orderBy('tanggal')
             ->get();
 
+        $absensiSelesai = $absensiList->filter(fn (Absensi $absensi) => $absensi->sudah_pulang);
+
         $totalJamNormal = 0.0;
         $totalJamLembur = 0.0;
         $rincianAbsensi = [];
 
-        foreach ($absensiList as $absensi) {
+        foreach ($absensiSelesai as $absensi) {
             $durasi = (float) $absensi->durasi_jam;
             // Catatan lama belum memiliki pemisahan jam; tetap dapat dihitung.
-            $jamNormal = $absensi->jam_normal === null ? min($durasi, 8) : (float) $absensi->jam_normal;
-            $jamLembur = $absensi->jam_lembur === null ? max($durasi - 8, 0) : (float) $absensi->jam_lembur;
+            $jamNormal = $absensi->jam_normal === null ? min($durasi, 13) : (float) $absensi->jam_normal;
+            $jamLembur = $absensi->jam_lembur === null ? max($durasi - 13, 0) : (float) $absensi->jam_lembur;
 
             $totalJamNormal += $jamNormal;
             $totalJamLembur += $jamLembur;
@@ -65,8 +67,8 @@ class PayrollCalculationService
             'insentif_lembur' => $upahLembur,
             'potongan' => 0,
             'total_gaji' => $upahJamNormal + $upahLembur,
-            'hari_hadir' => $absensiList->count(),
-            'hari_setengah' => $absensiList->filter(fn (Absensi $absensi) => (float) $absensi->durasi_jam < 8)->count(),
+            'hari_hadir' => $absensiSelesai->count(),
+            'hari_setengah' => 0,
             'total_jam_normal' => $totalJamNormal,
             'jam_lebih' => 0,
             'jam_lembur' => $totalJamLembur,
