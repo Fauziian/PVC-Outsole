@@ -22,15 +22,21 @@ interface Props {
   formatted_tanggal: string;
 }
 const DURASI = [8, 9, 10, 11, 12, 13, 14, 15];
+const waktuWibSekarang = () => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
 
 export default function AttendanceIndex({ rows, stats, tanggal, formatted_tanggal }: Props) {
   const [selectedTanggal, setSelectedTanggal] = useState(tanggal);
   const [active, setActive] = useState<Row | null>(null);
+  const [activeCheckIn, setActiveCheckIn] = useState<Row | null>(null);
+  const [jamMasuk, setJamMasuk] = useState(waktuWibSekarang());
   const [checkingInId, setCheckingInId] = useState<number | null>(null);
   const { data, setData, put, processing, errors, reset } = useForm({ durasi_jam: 8, keterangan: "" });
-  const checkIn = (row: Row) => {
-    setCheckingInId(row.id_karyawan);
-    router.post(route("attendance.check-in"), { id_karyawan: row.id_karyawan, tanggal: selectedTanggal }, {
+  const checkIn = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!activeCheckIn) return;
+    setCheckingInId(activeCheckIn.id_karyawan);
+    router.post(route("attendance.check-in"), { id_karyawan: activeCheckIn.id_karyawan, tanggal: selectedTanggal, jam_masuk: jamMasuk }, {
+      onSuccess: () => setActiveCheckIn(null),
       onFinish: () => setCheckingInId(null),
     });
   };
@@ -56,7 +62,7 @@ export default function AttendanceIndex({ rows, stats, tanggal, formatted_tangga
     </div>
 
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 bg-slate-50 px-6 py-4"><p className="text-xs font-bold text-slate-700">Absensi tanggal {formatted_tanggal}</p><p className="mt-1 text-[11px] text-slate-400">Tidak perlu mengisi jam manual. Sistem menyimpan waktu klik Masuk dan menghitung jam pulang dari durasi yang dipilih.</p></div>
+      <div className="border-b border-slate-100 bg-slate-50 px-6 py-4"><p className="text-xs font-bold text-slate-700">Absensi tanggal {formatted_tanggal}</p><p className="mt-1 text-[11px] text-slate-400">Saat Masuk, waktu WIB otomatis terisi dan dapat diubah. Jam pulang dihitung dari durasi yang dipilih.</p></div>
       <div className="overflow-x-auto"><table className="w-full min-w-[820px] text-left text-xs">
         <thead className="border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400"><tr><th className="px-6 py-4">Karyawan</th><th className="px-6 py-4">Jam Masuk</th><th className="px-6 py-4">Jam Pulang</th><th className="px-6 py-4">Durasi</th><th className="px-6 py-4">Status</th><th className="px-6 py-4 text-right">Aksi</th></tr></thead>
         <tbody className="divide-y divide-slate-50">{rows.map((row) => {
@@ -69,12 +75,13 @@ export default function AttendanceIndex({ rows, stats, tanggal, formatted_tangga
             <td className="px-6 py-4">{belumPulang || belumMasuk ? <span className="text-slate-400">Belum pulang</span> : <span className="font-bold text-slate-700">{absensi!.jam_keluar}</span>}</td>
             <td className="px-6 py-4">{belumPulang || belumMasuk ? <span className="text-slate-400">Pilih saat pulang</span> : <span className="font-bold text-slate-800">{absensi!.durasi_jam} jam</span>}</td>
             <td className="px-6 py-4">{belumMasuk ? <Badge text="BELUM MASUK" type="pending" /> : belumPulang ? <Badge text="HADIR / MASUK" type="working" /> : absensi!.status_kehadiran === "Lembur" ? <Badge text="LEMBUR" type="overtime" /> : <Badge text="SELESAI" type="done" />}</td>
-            <td className="px-6 py-4 text-right">{belumMasuk ? <button disabled={checkingInId === row.id_karyawan} onClick={() => checkIn(row)} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-emerald-700 disabled:opacity-50"><LogIn size={13} />{checkingInId === row.id_karyawan ? "Mencatat..." : "Masuk"}</button> : belumPulang ? <button onClick={() => { setActive(row); setData({ durasi_jam: 8, keterangan: "" }); }} className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-blue-700"><LogOut size={13} />Pulang</button> : <span className="text-[10px] font-bold text-slate-400">Tercatat</span>}</td>
+            <td className="px-6 py-4 text-right">{belumMasuk ? <button disabled={checkingInId === row.id_karyawan} onClick={() => { setActiveCheckIn(row); setJamMasuk(waktuWibSekarang()); }} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-emerald-700 disabled:opacity-50"><LogIn size={13} />Masuk</button> : belumPulang ? <button onClick={() => { setActive(row); setData({ durasi_jam: 8, keterangan: "" }); }} className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-blue-700"><LogOut size={13} />Pulang</button> : <span className="text-[10px] font-bold text-slate-400">Tercatat</span>}</td>
           </tr>;
         })}</tbody>
       </table></div>
     </div>
 
+    {activeCheckIn && <div className="fixed inset-0 z-50 flex items-center justify-center p-4"><button onClick={() => setActiveCheckIn(null)} className="absolute inset-0 bg-slate-900/40" aria-label="Tutup" /><form onSubmit={checkIn} className="relative w-full max-w-sm rounded-2xl bg-white shadow-2xl"><div className="flex items-center justify-between border-b border-slate-100 px-6 py-4"><div><h2 className="text-sm font-bold text-slate-800">Catat Jam Masuk</h2><p className="text-xs text-slate-400">{activeCheckIn.nama} · {formatted_tanggal}</p></div><button type="button" onClick={() => setActiveCheckIn(null)} className="text-slate-400"><X size={18} /></button></div><div className="space-y-4 p-6"><label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Jam Masuk (WIB)<input type="time" required value={jamMasuk} onChange={(event) => setJamMasuk(event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-emerald-500" /></label><div className="rounded-lg bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-700"><Clock size={13} className="mr-1 inline" />Waktu awal otomatis mengikuti WIB saat ini. Ubah bila absensi dicatat terlambat, misalnya 08.00.</div><div className="flex justify-end gap-2 border-t border-slate-100 pt-4"><button type="button" onClick={() => setActiveCheckIn(null)} className="rounded-lg px-4 py-2 text-xs font-bold text-slate-500">Batal</button><button disabled={checkingInId === activeCheckIn.id_karyawan} className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">Simpan Masuk</button></div></div></form></div>}
     {active && <div className="fixed inset-0 z-50 flex items-center justify-center p-4"><button onClick={() => setActive(null)} className="absolute inset-0 bg-slate-900/40" aria-label="Tutup" /><form onSubmit={checkOut} className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl"><div className="flex items-center justify-between border-b border-slate-100 px-6 py-4"><div><h2 className="text-sm font-bold text-slate-800">Catat Jam Pulang</h2><p className="text-xs text-slate-400">{active.nama} · masuk {active.absensi?.jam_masuk}</p></div><button type="button" onClick={() => setActive(null)} className="text-slate-400"><X size={18} /></button></div><div className="space-y-4 p-6"><div><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pilih total jam kerja hari ini</p><div className="mt-3 grid grid-cols-4 gap-2">{DURASI.map((jam) => <button type="button" onClick={() => setData("durasi_jam", jam)} key={jam} className={`rounded-lg border px-2 py-3 text-xs font-black ${data.durasi_jam === jam ? jam >= 14 ? "border-violet-600 bg-violet-600 text-white" : "border-blue-600 bg-blue-600 text-white" : jam >= 14 ? "border-violet-200 bg-violet-50 text-violet-700" : "border-slate-200 text-slate-600"}`}>{jam} jam</button>)}</div></div><div className={`rounded-lg p-3 text-xs ${data.durasi_jam >= 14 ? "bg-violet-50 text-violet-700" : "bg-blue-50 text-blue-700"}`}><Clock size={13} className="mr-1 inline" />{data.durasi_jam >= 14 ? `Durasi ${data.durasi_jam} jam akan dicatat sebagai LEMBUR.` : `Durasi ${data.durasi_jam} jam akan dicatat sebagai kerja reguler.`}</div><label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Keterangan (opsional)<textarea value={data.keterangan} onChange={(event) => setData("keterangan", event.target.value)} rows={2} placeholder="Contoh: pesanan pelanggan" className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none focus:border-blue-500" /></label>{errors.durasi_jam && <p className="text-xs text-red-600">{errors.durasi_jam}</p>}<div className="flex justify-end gap-2 border-t border-slate-100 pt-4"><button type="button" onClick={() => setActive(null)} className="rounded-lg px-4 py-2 text-xs font-bold text-slate-500">Batal</button><button disabled={processing} className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50">Simpan Pulang</button></div></div></form></div>}
   </SumberPvcLayout>;
 }

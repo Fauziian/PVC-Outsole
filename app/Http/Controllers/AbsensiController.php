@@ -18,7 +18,7 @@ class AbsensiController extends Controller
      */
     public function index(Request $request): Response
     {
-        $tanggalStr = $request->input('tanggal', now()->toDateString());
+        $tanggalStr = $request->input('tanggal', now('Asia/Jakarta')->toDateString());
         $tanggal = Carbon::parse($tanggalStr);
 
         // Ambil semua karyawan aktif
@@ -76,9 +76,10 @@ class AbsensiController extends Controller
         $validated = $request->validate([
             'id_karyawan' => ['required', 'exists:karyawan,id'],
             'tanggal' => ['required', 'date'],
+            'jam_masuk' => ['required', 'date_format:H:i'],
         ]);
 
-        $jamMasuk = now()->format('H:i');
+        $jamMasuk = $validated['jam_masuk'];
         $sudahAda = Absensi::where('id_karyawan', $validated['id_karyawan'])
             ->whereDate('tanggal', $validated['tanggal'])
             ->first();
