@@ -66,7 +66,12 @@ class StockController extends Controller
             $query->where('jenis', $jenis);
         }
 
-        $items = $query->orderBy('nama_barang', 'asc')->paginate(10)->withQueryString();
+        $items = $query
+            ->orderByRaw('CASE WHEN stok_saat_ini > 0 THEN 0 ELSE 1 END')
+            ->orderByDesc('stok_saat_ini')
+            ->orderBy('nama_barang', 'asc')
+            ->paginate(10)
+            ->withQueryString();
 
         // Tambahkan computed status_stok ke paginated items
         $items->getCollection()->transform(function($item) {

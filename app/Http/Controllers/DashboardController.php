@@ -78,6 +78,8 @@ class DashboardController extends Controller
 
             // Ringkasan stok fisik yang dapat langsung dilihat petugas gudang.
             $data['stok_tersedia'] = BarangPvc::query()
+                ->orderByRaw('CASE WHEN stok_saat_ini > 0 THEN 0 ELSE 1 END')
+                ->orderByDesc('stok_saat_ini')
                 ->orderBy('kategori')
                 ->orderBy('jenis')
                 ->orderBy('warna')
