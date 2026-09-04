@@ -11,6 +11,17 @@ error_reporting(E_ALL);
 
 define('LARAVEL_START', microtime(true));
 
+if (($_GET['__health'] ?? null) === '1') {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'php' => PHP_VERSION,
+        'autoload' => file_exists(__DIR__ . '/../vendor/autoload.php'),
+        'database' => file_exists(__DIR__ . '/../database/database.sqlite'),
+        'sqlite' => extension_loaded('pdo_sqlite'),
+    ]);
+    exit;
+}
+
 // Register the Composer autoloader from vendor (installed by vercel-php builder)
 require __DIR__ . '/../vendor/autoload.php';
 
