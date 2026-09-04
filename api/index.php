@@ -57,9 +57,6 @@ try {
     // Override storage path to /tmp for Vercel serverless
     $app->useStoragePath('/tmp/storage');
 
-    // Keep error responses renderable when the serverless provider manifest is stale.
-    $app->register(\Illuminate\View\ViewServiceProvider::class);
-
     // Handle the HTTP request
     $app->handleRequest(Request::capture());
 } catch (Throwable $exception) {

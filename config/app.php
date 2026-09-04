@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\ServiceProvider;
+
 return [
 
     /*
@@ -122,5 +125,19 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Autoloaded Service Providers and Aliases
+    |--------------------------------------------------------------------------
+    |
+    | Keep these explicit so serverless runtimes do not depend on merging the
+    | framework's packaged configuration before provider registration.
+    |
+    */
+
+    'providers' => ServiceProvider::defaultProviders()->toArray(),
+
+    'aliases' => Facade::defaultAliases()->toArray(),
 
 ];
