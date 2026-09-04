@@ -22,15 +22,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Seed Setting Gaji (Konfigurasi Parameter Penggajian)
-        // DEFAULT: NILAI CONTOH — bukan kebijakan riil perusahaan
+        // Tarif pabrik berdasarkan masa kerja karyawan.
         $settingGaji = SettingGaji::create([
-            'gaji_pokok_kategori_a'  => 4500000, // < 5 tahun masa kerja
-            'gaji_pokok_kategori_b'  => 6000000, // >= 5 tahun masa kerja
-            'insentif_jam_lebih_pct' => 7.00,    // 7% per jam lebih
-            'insentif_lembur_pct'    => 17.50,   // 17.5% per jam lembur
-            'potongan_setengah_pct'  => 40.00,   // 40% potongan setengah hari
+            'gaji_pokok_kategori_a'  => 0,
+            'gaji_pokok_kategori_b'  => 0,
+            'tarif_per_jam_kategori_a' => 12000,
+            'tarif_per_jam_kategori_b' => 17000,
+            'insentif_jam_lebih_pct' => 0,
+            'insentif_lembur_pct'    => 0,
+            'potongan_setengah_pct'  => 0,
             'is_active'              => true,
-            'keterangan'             => 'Konfigurasi Default Proposal Kerja Praktik',
+            'keterangan'             => 'Tarif per jam: <5 tahun Rp12.000, ≥5 tahun Rp17.000.',
         ]);
 
         // 2. Seed Pengguna (Users) sesuai 3 Role Utama

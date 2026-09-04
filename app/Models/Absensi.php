@@ -23,6 +23,9 @@ class Absensi extends Model
         'jam_masuk',
         'jam_keluar',
         'durasi_jam',
+        'shift',
+        'jam_normal',
+        'jam_lembur',
         'status_kehadiran',
         'keterangan',
     ];
@@ -32,6 +35,8 @@ class Absensi extends Model
         return [
             'tanggal'    => 'date',
             'durasi_jam' => 'decimal:2',
+            'jam_normal' => 'decimal:2',
+            'jam_lembur' => 'decimal:2',
         ];
     }
 

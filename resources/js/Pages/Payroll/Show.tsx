@@ -15,17 +15,20 @@ interface PayrollSlip {
   hari_setengah: number;
   jam_lebih: number;
   jam_lembur: number;
+  tarif_per_jam: number;
+  total_jam_normal: number;
   status: "draft" | "final";
   rincian: {
     kategori_masa_kerja: "A" | "B";
-    gaji_harian: number;
-    insentif_jam_lebih: number;
-    insentif_lembur_resmi: number;
-    potongan_setengah: number;
+    tarif_per_jam: number;
+    upah_jam_normal: number;
+    upah_lembur: number;
     absensi: {
       tanggal: string;
       durasi: number;
-      status: string;
+      shift: string;
+      jam_normal: number;
+      jam_lembur: number;
     }[];
   };
   karyawan: {
@@ -125,46 +128,20 @@ export default function Show({ payroll, setting }: ShowProps) {
                 </h3>
                 
                 <div className="space-y-3 text-xs">
-                  <ItemRow label="Gaji Pokok" val={idr(payroll.gaji_pokok)} />
-                  <ItemRow label="Tunjangan (Jabatan, Makan, Transp)" val={idr(payroll.tunjangan)} />
-                  
-                  {/* Break down insentif jam lebih & lembur */}
-                  <ItemRow 
-                    label={`Insentif Jam Lebih (${payroll.jam_lebih} jam)`} 
-                    val={idr(payroll.rincian.insentif_jam_lebih)} 
-                    sub="Beban kerja tambahan harian"
-                  />
-                  <ItemRow 
-                    label={`Insentif Lembur Resmi (${payroll.jam_lembur} jam)`} 
-                    val={idr(payroll.rincian.insentif_lembur_resmi)} 
-                    sub="Kehadiran >15 jam"
-                  />
+                  <ItemRow label={`Tarif kerja (${payroll.rincian.kategori_masa_kerja === "B" ? "≥5 tahun" : "<5 tahun"})`} val={`${idr(payroll.tarif_per_jam)} / jam`} />
+                  <ItemRow label={`Upah jam normal (${payroll.total_jam_normal} jam)`} val={idr(payroll.gaji_pokok)} sub="Maksimal 8 jam pada setiap absensi" />
+                  <ItemRow label={`Upah lembur (${payroll.jam_lembur} jam)`} val={idr(payroll.insentif_lembur)} sub="Jam ke-9 dan seterusnya" />
 
                   <div className="border-t border-slate-100 pt-3 flex justify-between font-bold text-slate-800">
                     <span>Total Pendapatan Kotor</span>
-                    <span>{idr(payroll.gaji_pokok + payroll.tunjangan + payroll.insentif_lembur)}</span>
+                    <span>{idr(payroll.gaji_pokok + payroll.insentif_lembur)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* POTONGAN */}
               <div className="space-y-4">
-                <h3 className="text-xs font-black text-slate-800 border-b border-slate-100 pb-2 uppercase tracking-wider text-rose-600">
-                  Komponen Potongan
-                </h3>
-
-                <div className="space-y-3 text-xs">
-                  <ItemRow 
-                    label={`Potongan Setengah Hari (${payroll.hari_setengah} kali)`} 
-                    val={idr(payroll.rincian.potongan_setengah)} 
-                    sub="Durasi kehadiran < 8 jam"
-                  />
-                  
-                  <div className="border-t border-slate-100 pt-3 flex justify-between font-bold text-slate-800">
-                    <span>Total Potongan</span>
-                    <span className="text-red-500">-{idr(payroll.potongan)}</span>
-                  </div>
-                </div>
+                <h3 className="text-xs font-black text-slate-800 border-b border-slate-100 pb-2 uppercase tracking-wider text-violet-600">Aturan Perhitungan</h3>
+                <p className="text-xs leading-relaxed text-slate-500">Pergantian shift tidak mengubah tarif. Setiap catatan absensi membagi 8 jam pertama sebagai normal dan jam setelahnya sebagai lembur.</p>
               </div>
             </div>
 
@@ -187,12 +164,12 @@ export default function Show({ payroll, setting }: ShowProps) {
             
             <div className="grid grid-cols-2 gap-4 text-center">
               <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <span className="text-[9px] font-bold text-slate-400 uppercase">Hadir &gt;= 8j</span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase">Hari Tercatat</span>
                 <span className="text-base font-black text-slate-800 block mt-0.5">{payroll.hari_hadir} Hari</span>
               </div>
               <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <span className="text-[9px] font-bold text-slate-400 uppercase">Setengah Hari</span>
-                <span className="text-base font-black text-amber-600 block mt-0.5">{payroll.hari_setengah} Hari</span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase">Total Lembur</span>
+                <span className="text-base font-black text-violet-600 block mt-0.5">{payroll.jam_lembur} Jam</span>
               </div>
             </div>
 
@@ -205,16 +182,9 @@ export default function Show({ payroll, setting }: ShowProps) {
                   <div key={idx} className="flex justify-between items-center bg-slate-50/50 hover:bg-slate-50 p-2 rounded border border-slate-100/50 text-xs">
                     <div>
                       <p className="font-semibold text-slate-700">{abs.tanggal}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{abs.durasi} jam kerja</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{abs.shift} · normal {abs.jam_normal}j · lembur {abs.jam_lembur}j</p>
                     </div>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${
-                      abs.status === "Penuh" ? "bg-green-50 text-green-700 border-green-100" :
-                      abs.status === "Lembur" ? "bg-purple-50 text-purple-700 border-purple-100" :
-                      abs.status === "Jam Lebih" ? "bg-indigo-50 text-indigo-700 border-indigo-100" :
-                      "bg-amber-50 text-amber-700 border-amber-100"
-                    }`}>
-                      {abs.status.toUpperCase()}
-                    </span>
+                    <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600">{abs.durasi} JAM</span>
                   </div>
                 ))
               )}

@@ -57,19 +57,20 @@ class ReportController extends Controller
         // Header
         $sheet->setCellValue('A1', 'LAPORAN REKAPITULASI PENGGAJIAN SUMBER PVC OUTSOLE TALI JEPIT');
         $sheet->setCellValue('A2', 'PERIODE: ' . $periode);
-        $sheet->mergeCells('A1:I1');
-        $sheet->mergeCells('A2:I2');
+        $sheet->mergeCells('A1:J1');
+        $sheet->mergeCells('A2:J2');
 
         // Kolom
         $sheet->setCellValue('A4', 'No');
         $sheet->setCellValue('B4', 'Nama Karyawan');
         $sheet->setCellValue('C4', 'Jabatan');
         $sheet->setCellValue('D4', 'Masa Kerja');
-        $sheet->setCellValue('E4', 'Gaji Pokok');
-        $sheet->setCellValue('F4', 'Tunjangan');
-        $sheet->setCellValue('G4', 'Insentif Lembur');
-        $sheet->setCellValue('H4', 'Potongan');
-        $sheet->setCellValue('I4', 'Gaji Bersih (Total)');
+        $sheet->setCellValue('E4', 'Tarif / Jam');
+        $sheet->setCellValue('F4', 'Jam Normal');
+        $sheet->setCellValue('G4', 'Upah Normal');
+        $sheet->setCellValue('H4', 'Jam Lembur');
+        $sheet->setCellValue('I4', 'Upah Lembur');
+        $sheet->setCellValue('J4', 'Total Gaji');
 
         $rowNum = 5;
         foreach ($payroll as $index => $p) {
@@ -77,21 +78,22 @@ class ReportController extends Controller
             $sheet->setCellValue('B' . $rowNum, $p->karyawan->nama);
             $sheet->setCellValue('C' . $rowNum, $p->karyawan->jabatan);
             $sheet->setCellValue('D' . $rowNum, $p->karyawan->kategori_masa_kerja === 'B' ? '>= 5 Tahun' : '< 5 Tahun');
-            $sheet->setCellValue('E' . $rowNum, $p->gaji_pokok);
-            $sheet->setCellValue('F' . $rowNum, $p->tunjangan);
-            $sheet->setCellValue('G' . $rowNum, $p->insentif_lembur);
-            $sheet->setCellValue('H' . $rowNum, $p->potongan);
-            $sheet->setCellValue('I' . $rowNum, $p->total_gaji);
+            $sheet->setCellValue('E' . $rowNum, $p->tarif_per_jam);
+            $sheet->setCellValue('F' . $rowNum, $p->total_jam_normal);
+            $sheet->setCellValue('G' . $rowNum, $p->gaji_pokok);
+            $sheet->setCellValue('H' . $rowNum, $p->jam_lembur);
+            $sheet->setCellValue('I' . $rowNum, $p->insentif_lembur);
+            $sheet->setCellValue('J' . $rowNum, $p->total_gaji);
             $rowNum++;
         }
 
         // Total
         $sheet->setCellValue('D' . $rowNum, 'TOTAL');
-        $sheet->setCellValue('E' . $rowNum, "=SUM(E5:E" . ($rowNum - 1) . ")");
         $sheet->setCellValue('F' . $rowNum, "=SUM(F5:F" . ($rowNum - 1) . ")");
         $sheet->setCellValue('G' . $rowNum, "=SUM(G5:G" . ($rowNum - 1) . ")");
         $sheet->setCellValue('H' . $rowNum, "=SUM(H5:H" . ($rowNum - 1) . ")");
         $sheet->setCellValue('I' . $rowNum, "=SUM(I5:I" . ($rowNum - 1) . ")");
+        $sheet->setCellValue('J' . $rowNum, "=SUM(J5:J" . ($rowNum - 1) . ")");
 
         $writer = new Xlsx($spreadsheet);
 

@@ -148,11 +148,8 @@ class PayrollController extends Controller
     public function updateSettings(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'gaji_pokok_kategori_a' => ['required', 'integer', 'min:0'],
-            'gaji_pokok_kategori_b' => ['required', 'integer', 'min:0'],
-            'insentif_jam_lebih_pct' => ['required', 'numeric', 'between:0,100'],
-            'insentif_lembur_pct' => ['required', 'numeric', 'between:0,100'],
-            'potongan_setengah_pct' => ['required', 'numeric', 'between:0,100'],
+            'tarif_per_jam_kategori_a' => ['required', 'integer', 'min:0'],
+            'tarif_per_jam_kategori_b' => ['required', 'integer', 'min:0'],
             'keterangan' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -160,7 +157,16 @@ class PayrollController extends Controller
         SettingGaji::where('is_active', true)->update(['is_active' => false]);
 
         // Buat config baru yang aktif
-        $validated['is_active'] = true;
+        // Kolom lama dipertahankan demi kompatibilitas data, namun perhitungan
+        // pabrik sekarang sepenuhnya memakai tarif per jam.
+        $validated += [
+            'gaji_pokok_kategori_a' => 0,
+            'gaji_pokok_kategori_b' => 0,
+            'insentif_jam_lebih_pct' => 0,
+            'insentif_lembur_pct' => 0,
+            'potongan_setengah_pct' => 0,
+            'is_active' => true,
+        ];
         SettingGaji::create($validated);
 
         return redirect()->back()

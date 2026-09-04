@@ -41,6 +41,9 @@ class AbsensiController extends Controller
                     'jam_masuk' => substr($abs->jam_masuk, 0, 5),
                     'jam_keluar' => substr($abs->jam_keluar, 0, 5),
                     'durasi_jam' => floatval($abs->durasi_jam),
+                    'shift' => $abs->shift,
+                    'jam_normal' => floatval($abs->jam_normal),
+                    'jam_lembur' => floatval($abs->jam_lembur),
                     'status_kehadiran' => $abs->status_kehadiran,
                     'keterangan' => $abs->keterangan,
                 ] : null,
@@ -50,9 +53,9 @@ class AbsensiController extends Controller
         // Statistik Kehadiran Tanggal Terkait
         $stats = [
             'total' => count($karyawanList),
-            'penuh' => Absensi::where('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Penuh')->count(),
-            'jam_lebih' => Absensi::where('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Jam Lebih')->count(),
-            'lembur' => Absensi::where('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Lembur')->count(),
+            'penuh' => Absensi::where('tanggal', $tanggal->toDateString())->where('jam_normal', '>=', 8)->count(),
+            'jam_lebih' => Absensi::where('tanggal', $tanggal->toDateString())->where('jam_lembur', '>', 0)->count(),
+            'lembur' => Absensi::where('tanggal', $tanggal->toDateString())->sum('jam_lembur'),
             'setengah_hari' => Absensi::where('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Setengah Hari')->count(),
             'absen' => count($karyawanList) - Absensi::where('tanggal', $tanggal->toDateString())->count(),
         ];
@@ -74,35 +77,40 @@ class AbsensiController extends Controller
             'id_karyawan' => ['required', 'exists:karyawan,id'],
             'tanggal' => ['required', 'date'],
             'jam_masuk' => ['required', 'date_format:H:i'],
-            'jam_keluar' => ['required', 'date_format:H:i', 'after:jam_masuk'],
+            'jam_keluar' => ['required', 'date_format:H:i'],
+            'shift' => ['required', 'in:Pagi,Sore,Malam'],
             'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
         $tanggal = $validated['tanggal'];
-        $masuk = Carbon::parse($validated['jam_masuk']);
-        $keluar = Carbon::parse($validated['jam_keluar']);
+        $masuk = Carbon::createFromFormat('Y-m-d H:i', "{$tanggal} {$validated['jam_masuk']}");
+        $keluar = Carbon::createFromFormat('Y-m-d H:i', "{$tanggal} {$validated['jam_keluar']}");
+
+        // Shift malam dapat berakhir pada hari berikutnya. Jam keluar yang sama
+        // atau lebih awal dari jam masuk berarti melewati tengah malam.
+        if ($keluar->lessThanOrEqualTo($masuk)) {
+            $keluar->addDay();
+        }
 
         // Hitung total jam kerja kotor (desimal)
         $diffMinutes = $masuk->diffInMinutes($keluar);
         $durasiJam = round($diffMinutes / 60, 2);
 
-        // Pengurangan jam istirahat otomatis (misal dikurangi 1 jam jika melewati jam makan siang)
-        // Demi kesederhanaan, mari gunakan durasi riil kerja yang terhitung.
-        // Tentukan status kehadiran otomatis sesuai aturan bisnis proposal:
-        // - durasi_jam < 8 → Setengah Hari
-        // - durasi_jam = 8 → Penuh (Normal)
-        // - 8 < durasi_jam <= 12 → Jam Lebih
-        // - durasi_jam > 15 → Lembur resmi (Shift ganda / ekstra)
-        // - di antara 12 dan 15 jam dianggap Penuh / Jam Lebih maksimal
+        if ($durasiJam > 15) {
+            return redirect()->back()->withErrors([
+                'jam_keluar' => 'Durasi kerja maksimal 15 jam per catatan. Pisahkan apabila ada kesalahan pencatatan.',
+            ])->withInput();
+        }
+
+        // Delapan jam pertama selalu jam normal. Jam berikutnya selalu lembur,
+        // termasuk pada shift sore/malam atau ketika melewati tengah malam.
+        $jamNormal = min($durasiJam, 8);
+        $jamLembur = max($durasiJam - 8, 0);
         $status = 'Penuh';
         if ($durasiJam < 8.0) {
             $status = 'Setengah Hari';
-        } elseif ($durasiJam > 8.0 && $durasiJam <= 12.0) {
+        } elseif ($jamLembur > 0) {
             $status = 'Jam Lebih';
-        } elseif ($durasiJam > 15.0) {
-            $status = 'Lembur';
-        } else {
-            $status = 'Penuh';
         }
 
         Absensi::updateOrCreate(
@@ -114,6 +122,9 @@ class AbsensiController extends Controller
                 'jam_masuk' => $validated['jam_masuk'],
                 'jam_keluar' => $validated['jam_keluar'],
                 'durasi_jam' => $durasiJam,
+                'shift' => $validated['shift'],
+                'jam_normal' => $jamNormal,
+                'jam_lembur' => $jamLembur,
                 'status_kehadiran' => $status,
                 'keterangan' => $validated['keterangan'] ?? null,
             ]

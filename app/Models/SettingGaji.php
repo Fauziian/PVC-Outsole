@@ -26,6 +26,8 @@ class SettingGaji extends Model
     protected $fillable = [
         'gaji_pokok_kategori_a',
         'gaji_pokok_kategori_b',
+        'tarif_per_jam_kategori_a',
+        'tarif_per_jam_kategori_b',
         'insentif_jam_lebih_pct',
         'insentif_lembur_pct',
         'potongan_setengah_pct',
@@ -38,6 +40,8 @@ class SettingGaji extends Model
         return [
             'gaji_pokok_kategori_a'  => 'integer',
             'gaji_pokok_kategori_b'  => 'integer',
+            'tarif_per_jam_kategori_a' => 'integer',
+            'tarif_per_jam_kategori_b' => 'integer',
             'insentif_jam_lebih_pct' => 'decimal:2',
             'insentif_lembur_pct'    => 'decimal:2',
             'potongan_setengah_pct'  => 'decimal:2',

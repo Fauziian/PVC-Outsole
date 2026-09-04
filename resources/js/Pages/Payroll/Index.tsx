@@ -11,6 +11,9 @@ interface PayrollSlip {
   insentif_lembur: number;
   potongan: number;
   total_gaji: number;
+  tarif_per_jam: number;
+  total_jam_normal: number;
+  jam_lembur: number;
   status: "draft" | "final";
   karyawan: {
     nama: string;
@@ -71,7 +74,7 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-800">Slip & Rekap Gaji Karyawan</h1>
-          <p className="text-xs text-slate-400 font-medium">Rekapitulasi total pengeluaran gaji bersih, tunjangan operasional, potongan presensi, dan insentif.</p>
+          <p className="text-xs text-slate-400 font-medium">Gaji bulanan dihitung dari jam absensi aktual: 8 jam normal, selebihnya lembur.</p>
         </div>
 
         {/* Action Controls */}
@@ -101,9 +104,9 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
 
       {/* REKAP KEUANGAN BULANAN */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <RecapCard label="Total Gaji Bersih Terbayar" value={idr(stats.total_bersih)} detail="Total netto setelah potongan" color="text-blue-600 bg-blue-50" />
-        <RecapCard label="Total Insentif Lembur" value={idr(stats.total_insentif)} detail="Beban jam kerja lebih & lembur" color="text-indigo-600 bg-indigo-50" />
-        <RecapCard label="Total Potongan Presensi" value={idr(stats.total_potongan)} detail="Potongan kehadiran setengah hari" color="text-amber-600 bg-amber-50" />
+        <RecapCard label="Total Gaji Dibuat" value={idr(stats.total_bersih)} detail="Akumulasi upah jam normal dan lembur" color="text-blue-600 bg-blue-50" />
+        <RecapCard label="Total Upah Lembur" value={idr(stats.total_insentif)} detail="Jam kerja setelah 8 jam per hari" color="text-indigo-600 bg-indigo-50" />
+        <RecapCard label="Tarif Pabrik" value="Rp12rb / Rp17rb" detail="Berdasarkan masa kerja karyawan" color="text-amber-600 bg-amber-50" />
         <RecapCard label="Jumlah Slip Digenerate" value={`${stats.count} Slip`} detail={`Untuk periode aktif: ${periode}`} color="text-purple-600 bg-purple-50" />
       </div>
 
@@ -119,10 +122,10 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
               <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 <th className="px-6 py-4">Karyawan</th>
                 <th className="px-6 py-4">Jabatan</th>
-                <th className="px-6 py-4">Gaji Pokok</th>
-                <th className="px-6 py-4">Tunjangan</th>
-                <th className="px-6 py-4">Insentif Lembur</th>
-                <th className="px-6 py-4">Potongan</th>
+                <th className="px-6 py-4">Tarif/Jam</th>
+                <th className="px-6 py-4">Jam Normal</th>
+                <th className="px-6 py-4">Jam Lembur</th>
+                <th className="px-6 py-4">Upah Lembur</th>
                 <th className="px-6 py-4">Total Gaji Bersih</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Aksi</th>
@@ -142,10 +145,10 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
                       <p className="font-semibold text-slate-800">{slip.karyawan.nama}</p>
                     </td>
                     <td className="px-6 py-4 text-slate-500 font-medium">{slip.karyawan.jabatan}</td>
-                    <td className="px-6 py-4 font-medium text-slate-700">{idr(slip.gaji_pokok)}</td>
-                    <td className="px-6 py-4 text-slate-600">{idr(slip.tunjangan)}</td>
+                    <td className="px-6 py-4 font-medium text-slate-700">{idr(slip.tarif_per_jam)}</td>
+                    <td className="px-6 py-4 text-slate-600">{slip.total_jam_normal} jam</td>
+                    <td className="px-6 py-4 text-violet-600 font-bold">{slip.jam_lembur} jam</td>
                     <td className="px-6 py-4 text-slate-600">{idr(slip.insentif_lembur)}</td>
-                    <td className="px-6 py-4 text-red-500 font-medium">-{idr(slip.potongan)}</td>
                     <td className="px-6 py-4 font-bold text-slate-800">{idr(slip.total_gaji)}</td>
                     <td className="px-6 py-4">
                       {slip.status === "final" ? (

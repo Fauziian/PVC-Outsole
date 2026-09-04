@@ -2,156 +2,91 @@
 
 namespace App\Services;
 
-use App\Models\Karyawan;
 use App\Models\Absensi;
-use App\Models\SettingGaji;
 use App\Models\KomponenGaji;
+use App\Models\Karyawan;
+use App\Models\SettingGaji;
 use Illuminate\Support\Facades\DB;
 
 class PayrollCalculationService
 {
     /**
-     * Hitung komponen gaji untuk satu karyawan pada periode tertentu.
-     * Periode format: "YYYY-MM" (e.g. "2026-08")
+     * Menghitung gaji bulanan berdasarkan absensi aktual.
      *
-     * Aturan Bisnis dari Proposal:
-     * - Gaji Pokok ditentukan dari Kategori Masa Kerja Karyawan:
-     *   - Kategori A (< 5 tahun): dari setting_gaji (default Rp4,500,000)
-     *   - Kategori B (>= 5 tahun): dari setting_gaji (default Rp6,000,000)
-     * - Tunjangan Jabatan: Rp500,000 untuk jabatan Supervisor / Kepala / Quality Control.
-     * - Tunjangan Transport: Rp250,000 (fixed untuk karyawan aktif)
-     * - Tunjangan Makan: Rp150,000 (fixed untuk karyawan aktif)
-     * - Hari Kerja Standar per Bulan: 22 Hari.
-     * - Gaji Harian = Gaji Pokok / 22
-     * - Potongan Setengah Hari (< 8 jam): 40% dari Gaji Harian.
-     * - Insentif Kerja Lebih (8-12 jam): 7% dari Gaji Harian per jam lebih.
-     * - Insentif Lembur (> 15 jam): 17.5% dari Gaji Harian per jam lembur.
-     * - Tanpa PPh 21 dan BPJS (ditiadakan sesuai revisi ERD).
+     * Tidak ada gaji pokok atau persentase lembur: setiap jam kerja dibayar
+     * Rp12.000 (< 5 tahun) atau Rp17.000 (>= 5 tahun). Delapan jam pertama
+     * pada satu catatan adalah jam normal; sisanya adalah lembur.
      */
     public function calculate(Karyawan $karyawan, string $periode): array
     {
         $setting = SettingGaji::aktif();
+        $kategoriMasaKerja = $karyawan->kategori_otomatis;
+        $tarifPerJam = $kategoriMasaKerja === 'B'
+            ? $setting->tarif_per_jam_kategori_b
+            : $setting->tarif_per_jam_kategori_a;
 
-        // 1. Tentukan Gaji Pokok
-        $kategoriMasaKerja = $karyawan->kategori_masa_kerja;
-        $gajiPokok = $kategoriMasaKerja === 'B' 
-            ? $setting->gaji_pokok_kategori_b 
-            : $setting->gaji_pokok_kategori_a;
-
-        // Gaji harian untuk basis potongan & insentif
-        $gajiHarian = $gajiPokok / 22;
-
-        // 2. Tunjangan
-        $isSenior = false;
-        $jabatanLower = strtolower($karyawan->jabatan);
-        foreach (['supervisor', 'kepala', 'quality control', 'hrd', 'pimpinan'] as $keyword) {
-            if (str_contains($jabatanLower, $keyword)) {
-                $isSenior = true;
-                break;
-            }
-        }
-        $tunjanganJabatan = $isSenior ? 500000 : 0;
-        $tunjanganTransport = 250000;
-        $tunjanganMakan = 150000;
-        $totalTunjangan = $tunjanganJabatan + $tunjanganTransport + $tunjanganMakan;
-
-        // 3. Proses Kehadiran & Jam Kerja
-        // Ambil data absensi karyawan pada periode ini
         $absensiList = Absensi::where('id_karyawan', $karyawan->id)
             ->whereYear('tanggal', substr($periode, 0, 4))
             ->whereMonth('tanggal', substr($periode, 5, 2))
+            ->orderBy('tanggal')
             ->get();
 
-        $hariHadir = 0;
-        $hariSetengah = 0;
-        $jamLebih = 0.0;
-        $jamLembur = 0.0;
-
-        $insentifJamLebih = 0.0;
-        $insentifLembur = 0.0;
-        $potonganSetengah = 0.0;
-
+        $totalJamNormal = 0.0;
+        $totalJamLembur = 0.0;
         $rincianAbsensi = [];
 
-        foreach ($absensiList as $abs) {
-            $durasi = floatval($abs->durasi_jam);
-            $status = $abs->status_kehadiran;
+        foreach ($absensiList as $absensi) {
+            $durasi = (float) $absensi->durasi_jam;
+            // Catatan lama belum memiliki pemisahan jam; tetap dapat dihitung.
+            $jamNormal = $absensi->jam_normal === null ? min($durasi, 8) : (float) $absensi->jam_normal;
+            $jamLembur = $absensi->jam_lembur === null ? max($durasi - 8, 0) : (float) $absensi->jam_lembur;
 
-            if ($durasi >= 8.0) {
-                $hariHadir++;
-                
-                // Jam Lebih (8 - 12 jam)
-                if ($durasi > 8.0 && $durasi <= 12.0) {
-                    $lebih = $durasi - 8.0;
-                    $jamLebih += $lebih;
-                    // 7% dari gaji harian per jam lebih
-                    $insentifJamLebih += $lebih * $gajiHarian * ($setting->insentif_jam_lebih_pct / 100);
-                } 
-                // Lembur (> 15 jam)
-                elseif ($durasi > 15.0) {
-                    $lembur = $durasi - 8.0; // hitung lembur dari jam ke-8
-                    $jamLembur += $lembur;
-                    // 17.5% dari gaji harian per jam lembur
-                    $insentifLembur += $lembur * $gajiHarian * ($setting->insentif_lembur_pct / 100);
-                }
-            } else {
-                // Setengah Hari (< 8 jam)
-                $hariSetengah++;
-                // Potongan 40% dari gaji harian
-                $potonganSetengah += $gajiHarian * ($setting->potongan_setengah_pct / 100);
-            }
-
+            $totalJamNormal += $jamNormal;
+            $totalJamLembur += $jamLembur;
             $rincianAbsensi[] = [
-                'tanggal' => $abs->tanggal->format('Y-m-d'),
+                'tanggal' => $absensi->tanggal->format('Y-m-d'),
+                'shift' => $absensi->shift ?? '-',
+                'jam_masuk' => substr($absensi->jam_masuk, 0, 5),
+                'jam_keluar' => substr($absensi->jam_keluar, 0, 5),
+                'jam_normal' => $jamNormal,
+                'jam_lembur' => $jamLembur,
                 'durasi' => $durasi,
-                'status' => $status
             ];
         }
 
-        $totalInsentif = round($insentifJamLebih + $insentifLembur);
-        $totalPotongan = round($potonganSetengah);
-
-        // 4. Hitung Total Gaji Bersih
-        $totalGaji = $gajiPokok + $totalTunjangan + $totalInsentif - $totalPotongan;
+        $upahJamNormal = (int) round($totalJamNormal * $tarifPerJam);
+        $upahLembur = (int) round($totalJamLembur * $tarifPerJam);
 
         return [
             'kategori_masa_kerja' => $kategoriMasaKerja,
-            'gaji_pokok' => $gajiPokok,
-            'tunjangan_jabatan' => $tunjanganJabatan,
-            'tunjangan_transport' => $tunjanganTransport,
-            'tunjangan_makan' => $tunjanganMakan,
-            'tunjangan' => $totalTunjangan,
-            'insentif_lembur' => $totalInsentif, // disatukan sesuai kolom tabel
-            'potongan' => $totalPotongan,
-            'total_gaji' => max(0, $totalGaji),
-            'hari_hadir' => $hariHadir,
-            'hari_setengah' => $hariSetengah,
-            'jam_lebih' => $jamLebih,
-            'jam_lembur' => $jamLembur,
+            'tarif_per_jam' => $tarifPerJam,
+            'gaji_pokok' => $upahJamNormal,
+            'tunjangan' => 0,
+            'insentif_lembur' => $upahLembur,
+            'potongan' => 0,
+            'total_gaji' => $upahJamNormal + $upahLembur,
+            'hari_hadir' => $absensiList->count(),
+            'hari_setengah' => $absensiList->filter(fn (Absensi $absensi) => (float) $absensi->durasi_jam < 8)->count(),
+            'total_jam_normal' => $totalJamNormal,
+            'jam_lebih' => 0,
+            'jam_lembur' => $totalJamLembur,
             'rincian' => [
                 'kategori_masa_kerja' => $kategoriMasaKerja,
-                'gaji_harian' => round($gajiHarian),
-                'insentif_jam_lebih' => round($insentifJamLebih),
-                'insentif_lembur_resmi' => round($insentifLembur),
-                'potongan_setengah' => round($potonganSetengah),
-                'absensi' => $rincianAbsensi
-            ]
+                'tarif_per_jam' => $tarifPerJam,
+                'upah_jam_normal' => $upahJamNormal,
+                'upah_lembur' => $upahLembur,
+                'absensi' => $rincianAbsensi,
+            ],
         ];
     }
 
-    /**
-     * Generate atau update record KomponenGaji di database.
-     */
     public function generate(Karyawan $karyawan, string $periode): KomponenGaji
     {
         return DB::transaction(function () use ($karyawan, $periode) {
             $data = $this->calculate($karyawan, $periode);
 
             return KomponenGaji::updateOrCreate(
-                [
-                    'id_karyawan' => $karyawan->id,
-                    'periode' => $periode,
-                ],
+                ['id_karyawan' => $karyawan->id, 'periode' => $periode],
                 [
                     'gaji_pokok' => $data['gaji_pokok'],
                     'tunjangan' => $data['tunjangan'],
@@ -160,8 +95,10 @@ class PayrollCalculationService
                     'total_gaji' => $data['total_gaji'],
                     'hari_hadir' => $data['hari_hadir'],
                     'hari_setengah' => $data['hari_setengah'],
+                    'total_jam_normal' => $data['total_jam_normal'],
                     'jam_lebih' => $data['jam_lebih'],
                     'jam_lembur' => $data['jam_lembur'],
+                    'tarif_per_jam' => $data['tarif_per_jam'],
                     'rincian' => $data['rincian'],
                     'status' => 'draft',
                 ]

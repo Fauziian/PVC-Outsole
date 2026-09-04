@@ -32,6 +32,8 @@ class KomponenGaji extends Model
         'hari_setengah',
         'jam_lebih',
         'jam_lembur',
+        'tarif_per_jam',
+        'total_jam_normal',
         'rincian',
         'status',
     ];
@@ -44,6 +46,8 @@ class KomponenGaji extends Model
             'potongan'       => 'integer',
             'insentif_lembur'=> 'integer',
             'total_gaji'     => 'integer',
+            'tarif_per_jam'  => 'integer',
+            'total_jam_normal' => 'decimal:2',
             'jam_lebih'      => 'decimal:2',
             'jam_lembur'     => 'decimal:2',
             'rincian'        => 'array',

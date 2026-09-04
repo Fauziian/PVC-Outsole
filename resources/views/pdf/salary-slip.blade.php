@@ -162,22 +162,22 @@
         </thead>
         <tbody>
             <tr>
-                <td>Gaji Pokok</td>
+                <td>Upah Jam Normal ({{ number_format($payroll->total_jam_normal, 2, ',', '.') }} jam)</td>
                 <td class="number-cell">Rp {{ number_format($payroll->gaji_pokok, 0, ',', '.') }}</td>
-                <td>Potongan Setengah Hari</td>
-                <td class="number-cell">Rp {{ number_format($payroll->potongan, 0, ',', '.') }}</td>
+                <td>Tarif per Jam</td>
+                <td class="number-cell">Rp {{ number_format($payroll->tarif_per_jam, 0, ',', '.') }}</td>
             </tr>
             <tr>
-                <td>Tunjangan Jabatan & Operasional</td>
-                <td class="number-cell">Rp {{ number_format($payroll->tunjangan, 0, ',', '.') }}</td>
-                <td>-</td>
-                <td class="number-cell">Rp 0</td>
-            </tr>
-            <tr>
-                <td>Insentif Lembur / Kerja Lebih</td>
+                <td>Upah Lembur ({{ number_format($payroll->jam_lembur, 2, ',', '.') }} jam)</td>
                 <td class="number-cell">Rp {{ number_format($payroll->insentif_lembur, 0, ',', '.') }}</td>
-                <td>-</td>
-                <td class="number-cell">Rp 0</td>
+                <td>Aturan Lembur</td>
+                <td class="number-cell">Setelah 8 jam</td>
+            </tr>
+            <tr>
+                <td>Jumlah Hari Tercatat</td>
+                <td class="number-cell">{{ $payroll->hari_hadir }} hari</td>
+                <td>Potongan</td>
+                <td class="number-cell">Rp {{ number_format($payroll->potongan, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
@@ -204,7 +204,7 @@
     </table>
 
     <div class="note">
-        * Catatan: Slip gaji ini digenerate secara otomatis melalui Sistem Informasi Operasional Sumber PVC Outsole Tali Jepit. Gaji pokok, insentif lembur, dan potongan kehadiran di atas disesuaikan dengan log absensi terverifikasi.
+        * Catatan: Gaji dihitung dari absensi terverifikasi. Delapan jam pertama per catatan adalah jam normal dan jam berikutnya adalah lembur; shift malam tetap dihitung pada tanggal mulai shift.
     </div>
 
 </body>
