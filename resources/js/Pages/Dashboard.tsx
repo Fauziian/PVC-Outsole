@@ -74,9 +74,9 @@ export default function Dashboard({
         {role === "admin" && (
           <>
             <CardStat label="Total Akun Pengguna" value={stats.total_users} icon={Users} color="bg-blue-500" />
-            <CardStat label="Pengguna Aktif" value={stats.active_users} icon={UserCheck} color="bg-emerald-500" />
-            <CardStat label="Pengguna Nonaktif" value={stats.inactive_users} icon={AlertTriangle} color="bg-rose-500" />
-            <CardStat label="Sistem Status" value="Online" icon={RefreshCw} color="bg-indigo-500" />
+            <CardStat label="Administrator" value={stats.total_admin} icon={ShieldAlert} color="bg-rose-500" />
+            <CardStat label="HR / Keuangan" value={stats.total_hr} icon={UserCheck} color="bg-emerald-500" />
+            <CardStat label="Staff Gudang" value={stats.total_warehouse} icon={Package} color="bg-indigo-500" />
           </>
         )}
 
@@ -271,7 +271,10 @@ export default function Dashboard({
           {/* ADMIN LIST (Recent Login logs) */}
           {role === "admin" && (
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-slate-800">Log Login Pengguna Sistem Terakhir</h3>
+              <div className="flex items-center justify-between gap-3">
+                <div><h3 className="text-sm font-bold text-slate-800">Log Login Pengguna Sistem Terakhir</h3><p className="mt-0.5 text-[10px] text-slate-400">Kelola akun, role, status aktif, dan kata sandi dari menu pengguna.</p></div>
+                <Link href={route("users.index")} className="shrink-0 text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">Kelola Pengguna <ArrowRight size={13} /></Link>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>

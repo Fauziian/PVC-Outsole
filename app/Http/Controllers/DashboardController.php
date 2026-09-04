@@ -35,6 +35,9 @@ class DashboardController extends Controller
         if ($role === 'admin') {
             $data['stats'] = [
                 'total_users' => User::count(),
+                'total_admin' => User::where('role', 'admin')->count(),
+                'total_hr' => User::where('role', 'hr')->count(),
+                'total_warehouse' => User::where('role', 'warehouse')->count(),
                 'active_users' => User::where('is_active', true)->count(),
                 'inactive_users' => User::where('is_active', false)->count(),
                 'recent_logins' => User::whereNotNull('last_login_at')
