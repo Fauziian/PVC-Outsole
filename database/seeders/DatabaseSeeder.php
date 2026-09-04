@@ -307,5 +307,8 @@ class DatabaseSeeder extends Seeder
             $out['keterangan'] = 'Pengiriman barang jadi';
             BarangKeluar::create($out);
         }
+
+        // 8. Ganti data karyawan proposal dengan data contoh operasional pabrik.
+        $this->call(DemoWorkforceSeeder::class);
     }
 }
