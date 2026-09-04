@@ -76,6 +76,13 @@ class DashboardController extends Controller
 
             $data['notifikasi_kritis'] = [];
 
+            // Ringkasan stok fisik yang dapat langsung dilihat petugas gudang.
+            $data['stok_tersedia'] = BarangPvc::query()
+                ->orderBy('kategori')
+                ->orderBy('jenis')
+                ->orderBy('warna')
+                ->get(['id', 'kategori', 'jenis', 'warna', 'stok_saat_ini', 'stok_minimum', 'satuan']);
+
             // Riwayat transaksi gudang terbaru
             $data['recent_masuk'] = BarangMasuk::with('barangPvc')
                 ->orderBy('tanggal', 'desc')

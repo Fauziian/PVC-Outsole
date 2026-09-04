@@ -15,6 +15,7 @@ interface DashboardProps {
   notifikasi_kritis?: any[];
   recent_masuk?: any[];
   recent_keluar?: any[];
+  stok_tersedia?: any[];
   aktifitas_terbaru: any[];
 }
 
@@ -25,6 +26,7 @@ export default function Dashboard({
   notifikasi_kritis = [],
   recent_masuk = [],
   recent_keluar = [],
+  stok_tersedia = [],
   aktifitas_terbaru = []
 }: DashboardProps) {
   
@@ -152,6 +154,44 @@ export default function Dashboard({
           {/* WAREHOUSE TABLES (Recent Mutual Transactions) */}
           {role === "warehouse" && (
             <div className="space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Stok Barang Tersedia</h3>
+                    <p className="mt-0.5 text-[10px] text-slate-400">Jumlah stok saat ini dalam satuan kodi.</p>
+                  </div>
+                  <Link href={route("stock.incoming")} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                    Barang Masuk <ArrowRight size={13} />
+                  </Link>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="pb-2">Kategori</th>
+                        <th className="pb-2">Produk</th>
+                        <th className="pb-2">Warna</th>
+                        <th className="pb-2 text-right">Stok Tersedia</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50 text-xs">
+                      {stok_tersedia.length === 0 ? (
+                        <tr><td colSpan={4} className="py-4 text-center text-slate-400">Belum ada data stok.</td></tr>
+                      ) : stok_tersedia.map((barang) => {
+                        const aman = barang.stok_saat_ini > barang.stok_minimum;
+                        const label = barang.jenis || barang.kategori;
+                        return <tr key={barang.id} className="hover:bg-slate-50/50">
+                          <td className="py-2.5 text-slate-500">{barang.kategori}</td>
+                          <td className="py-2.5 font-semibold text-slate-800">{label}</td>
+                          <td className="py-2.5 text-slate-600">{barang.warna || "—"}</td>
+                          <td className={`py-2.5 text-right font-bold ${aman ? "text-green-600" : "text-red-500"}`}>{barang.stok_saat_ini} {barang.satuan}</td>
+                        </tr>;
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-sm font-bold text-slate-800">Hasil Cetak Masuk Terakhir</h3>
