@@ -57,6 +57,7 @@ $app = require_once __DIR__ . '/../bootstrap/app.php';
 $app->useStoragePath('/tmp/storage');
 
 // The third-party Vercel PHP runtime may skip Laravel's provider manifest.
+$app->make(\Illuminate\Contracts\Http\Kernel::class)->bootstrap();
 foreach ((new \Illuminate\Support\DefaultProviders)->toArray() as $provider) {
     $app->register($provider);
 }
