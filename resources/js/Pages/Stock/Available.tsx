@@ -39,22 +39,27 @@ export default function Available({ items, filters, jenis_tali_jepit }: Props) {
       <div className="rounded-xl bg-blue-600 px-4 py-3 text-white shadow-sm"><p className="text-[10px] font-bold uppercase tracking-wider text-blue-100">Total varian produk</p><p className="text-xl font-black">{items.total}</p></div>
     </div>
 
-    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-      <form onSubmit={event => { event.preventDefault(); applyFilter(); }} className="relative w-full md:max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, warna, atau kode..." className="w-full rounded-lg border-slate-200 py-2 pl-9 pr-3 text-xs" />
-      </form>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <select value={kategori} onChange={event => { const nextKategori = event.target.value; const nextJenis = nextKategori === "Tali Jepit" ? jenis : ""; setKategori(nextKategori); setJenis(nextJenis); applyFilter(status, nextKategori, nextJenis); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
-          <option value="">Semua kategori</option><option value="Tali Jepit">Tali Jepit</option><option value="Boloni Gunung">Boloni Gunung</option><option value="Outsole">Outsole</option>
-        </select>
-        {kategori === "Tali Jepit" && <select value={jenis} onChange={event => { setJenis(event.target.value); applyFilter(status, kategori, event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
-          <option value="">Semua jenis jepit</option>{jenis_tali_jepit.map(item => <option key={item} value={item}>{item}</option>)}
-        </select>}
-        <select value={status} onChange={event => { setStatus(event.target.value); applyFilter(event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
-          <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kritis">Stok kritis</option>
-        </select>
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <form onSubmit={event => { event.preventDefault(); applyFilter(); }} className="relative w-full md:max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, warna, atau kode..." className="w-full rounded-lg border-slate-200 py-2 pl-9 pr-3 text-xs" />
+        </form>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <select value={kategori} onChange={event => { const nextKategori = event.target.value; const nextJenis = nextKategori === "Tali Jepit" ? jenis : ""; setKategori(nextKategori); setJenis(nextJenis); applyFilter(status, nextKategori, nextJenis); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
+            <option value="">Semua kategori</option><option value="Tali Jepit">Tali Jepit</option><option value="Boloni Gunung">Boloni Gunung</option><option value="Outsole">Outsole</option>
+          </select>
+          <select value={status} onChange={event => { setStatus(event.target.value); applyFilter(event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
+            <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kritis">Stok kritis</option>
+          </select>
+        </div>
       </div>
+      {kategori === "Tali Jepit" && <label className="flex flex-col gap-1 border-t border-slate-100 pt-3 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:w-56">
+        Jenis Tali Jepit
+        <select value={jenis} onChange={event => { setJenis(event.target.value); applyFilter(status, kategori, event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs font-semibold normal-case text-slate-700">
+          <option value="">Semua jenis jepit</option>{jenis_tali_jepit.map(item => <option key={item} value={item}>{item}</option>)}
+        </select>
+      </label>}
     </div>
 
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
