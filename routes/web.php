@@ -73,6 +73,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Laporan mingguan mutasi barang jadi
         Route::get('/stock/weekly-report', [StockController::class, 'weeklyReport'])->name('stock.weekly-report');
+        Route::get('/stock/report/excel', [StockController::class, 'exportStockReportExcel'])->name('stock.report.excel');
+        Route::get('/stock/report/pdf', [StockController::class, 'exportStockReportPdf'])->name('stock.report.pdf');
 
     });
 

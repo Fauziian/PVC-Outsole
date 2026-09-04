@@ -96,5 +96,15 @@ class WarehouseStockTest extends TestCase
                 ->where('totals.selisih', 15)
                 ->has('rows', 1)
             );
+
+        $this->actingAs($warehouse)
+            ->get(route('stock.report.excel', ['type' => 'weekly', 'date' => '2026-09-02']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $this->actingAs($warehouse)
+            ->get(route('stock.report.pdf', ['type' => 'monthly', 'date' => '2026-09-01']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
     }
 }

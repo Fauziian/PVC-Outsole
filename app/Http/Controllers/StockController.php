@@ -13,6 +13,13 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StockController extends Controller
 {
@@ -229,10 +236,66 @@ class StockController extends Controller
      */
     public function weeklyReport(Request $request): Response
     {
-        $validated = $request->validate(['week' => ['nullable', 'date']]);
-        $requestedDate = $validated['week'] ?? now()->toDateString();
-        $start = Carbon::parse($requestedDate)->startOfWeek(Carbon::MONDAY);
-        $end = $start->copy()->endOfWeek(Carbon::SUNDAY);
+        return Inertia::render('Stock/WeeklyReport', $this->stockReportData($request));
+    }
+
+    public function exportStockReportExcel(Request $request): StreamedResponse
+    {
+        $data = $this->stockReportData($request);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Gudang');
+        $sheet->setShowGridlines(false);
+        $sheet->mergeCells('A1:G1')->setCellValue('A1', 'LAPORAN MUTASI BARANG JADI - SUMBER PVC');
+        $sheet->mergeCells('A2:G2')->setCellValue('A2', strtoupper($data['period']['label']).': '.$data['period']['start'].' - '.$data['period']['end']);
+        $sheet->fromArray(['No', 'Kategori', 'Jenis', 'Warna', 'Masuk (kodi)', 'Keluar (kodi)', 'Selisih (kodi)'], null, 'A4');
+
+        $row = 5;
+        foreach ($data['rows'] as $index => $item) {
+            $sheet->fromArray([$index + 1, $item['kategori'], $item['jenis'], $item['warna'], $item['masuk'], $item['keluar'], $item['selisih']], null, 'A'.$row++);
+        }
+        $sheet->fromArray(['', '', '', 'TOTAL', $data['totals']['masuk'], $data['totals']['keluar'], $data['totals']['selisih']], null, 'A'.$row);
+
+        $sheet->getStyle('A1:G1')->applyFromArray(['font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '0F172A']], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]]);
+        $sheet->getStyle('A2:G2')->applyFromArray(['font' => ['bold' => true, 'color' => ['rgb' => '1E40AF']], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'DBEAFE']], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]]);
+        $sheet->getStyle('A4:G4')->applyFromArray(['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2563EB']], 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]]);
+        $sheet->getStyle('A'.$row.':G'.$row)->applyFromArray(['font' => ['bold' => true], 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'E2E8F0']], 'borders' => ['top' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '94A3B8']]]]);
+        $sheet->getStyle('E5:G'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('E5:G'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->freezePane('A5');
+        foreach (['A' => 7, 'B' => 18, 'C' => 22, 'D' => 16, 'E' => 17, 'F' => 17, 'G' => 17] as $column => $width) $sheet->getColumnDimension($column)->setWidth($width);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+        $sheet->setAutoFilter('A4:G'.max(4, $row - 1));
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'Laporan-Gudang-'.$data['period']['type'].'-'.$data['period']['key'].'.xlsx';
+        return new StreamedResponse(fn () => $writer->save('php://output'), 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    public function exportStockReportPdf(Request $request)
+    {
+        $data = $this->stockReportData($request);
+        return Pdf::loadView('pdf.stock-report', $data)
+            ->setPaper('a4', 'landscape')
+            ->download('Laporan-Gudang-'.$data['period']['type'].'-'.$data['period']['key'].'.pdf');
+    }
+
+    private function stockReportData(Request $request): array
+    {
+        $validated = $request->validate([
+            'type' => ['nullable', 'in:weekly,monthly'],
+            'date' => ['nullable', 'date'],
+            'week' => ['nullable', 'date'],
+        ]);
+        $type = $validated['type'] ?? 'weekly';
+        $requestedDate = $validated['date'] ?? $validated['week'] ?? now()->toDateString();
+        $date = Carbon::parse($requestedDate);
+        $start = $type === 'monthly' ? $date->copy()->startOfMonth() : $date->copy()->startOfWeek(Carbon::MONDAY);
+        $end = $type === 'monthly' ? $date->copy()->endOfMonth() : $date->copy()->endOfWeek(Carbon::SUNDAY);
 
         $incoming = BarangMasuk::query()
             ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
@@ -261,9 +324,12 @@ class StockController extends Controller
                 'selisih' => (int) ($incoming[$product->id] ?? 0) - (int) ($outgoing[$product->id] ?? 0),
             ])->values();
 
-        return Inertia::render('Stock/WeeklyReport', [
+        return [
             'period' => [
-                'week' => $start->toDateString(),
+                'type' => $type,
+                'date' => $type === 'monthly' ? $start->format('Y-m') : $start->toDateString(),
+                'key' => $type === 'monthly' ? $start->format('Y-m') : $start->toDateString(),
+                'label' => $type === 'monthly' ? 'Periode Bulanan' : 'Periode Mingguan',
                 'start' => $start->translatedFormat('d M Y'),
                 'end' => $end->translatedFormat('d M Y'),
             ],
@@ -273,7 +339,7 @@ class StockController extends Controller
                 'keluar' => (int) $outgoing->sum(),
                 'selisih' => (int) $incoming->sum() - (int) $outgoing->sum(),
             ],
-        ]);
+        ];
     }
 
     /**

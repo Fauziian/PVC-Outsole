@@ -34,7 +34,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
     { id: "incoming", label: "Barang Masuk", icon: Package, route: "stock.incoming" },
     { id: "outgoing", label: "Barang Keluar", icon: Package, route: "stock.outgoing" },
-    { id: "weekly-report", label: "Laporan Mingguan", icon: BarChart2, route: "stock.weekly-report" },
+    { id: "weekly-report", label: "Laporan Mingguan/Bulanan", icon: BarChart2, route: "stock.weekly-report" },
   ],
   management: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
