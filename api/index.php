@@ -31,17 +31,14 @@ foreach ($vercelTmpDirs as $dir) {
 // If using SQLite, copy the database to /tmp to make it writable
 $dbConnection = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? ($_SERVER['DB_CONNECTION'] ?? 'sqlite'));
 if ($dbConnection === 'sqlite') {
-    $dbPath = '/tmp/database.sqlite';
     $srcPath = __DIR__ . '/../database/database.sqlite';
-    $versionPath = '/tmp/database.version';
     $sourceVersion = file_exists($srcPath) ? sha1_file($srcPath) : null;
-    $deployedVersion = file_exists($versionPath) ? trim((string) file_get_contents($versionPath)) : null;
+    $dbPath = '/tmp/database-' . ($sourceVersion ?: 'default') . '.sqlite';
 
-    // Refresh the writable demo database once when a deployment ships a new schema/data version.
-    if ($sourceVersion && (!file_exists($dbPath) || $deployedVersion !== $sourceVersion)) {
+    // Each bundled database version gets its own writable serverless copy.
+    if ($sourceVersion && !file_exists($dbPath)) {
         copy($srcPath, $dbPath);
         @chmod($dbPath, 0666);
-        file_put_contents($versionPath, $sourceVersion);
     }
     putenv('DB_DATABASE=' . $dbPath);
     $_ENV['DB_DATABASE'] = $dbPath;
