@@ -68,6 +68,11 @@ try {
     // Override storage path to /tmp for Vercel serverless
     $app->useStoragePath('/tmp/storage');
 
+    // The third-party Vercel PHP runtime may skip Laravel's provider manifest.
+    foreach ((new \Illuminate\Support\DefaultProviders)->toArray() as $provider) {
+        $app->register($provider);
+    }
+
     // Handle the HTTP request
     $app->handleRequest(Request::capture());
 } catch (Throwable $exception) {
