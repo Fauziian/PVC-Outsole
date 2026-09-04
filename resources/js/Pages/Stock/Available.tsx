@@ -6,7 +6,7 @@ import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
 type Product = {
   id: number; kode_barang: string; nama_barang: string; kategori: string;
   jenis: string | null; warna: string | null; satuan: string;
-  stok_saat_ini: number; stok_minimum: number; status_stok: "aman" | "menipis" | "kritis";
+  stok_saat_ini: number; stok_minimum: number; status_stok: "aman" | "menipis" | "kosong";
 };
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 const statusStyle = {
   aman: "bg-green-50 text-green-700 border-green-200",
   menipis: "bg-amber-50 text-amber-700 border-amber-200",
-  kritis: "bg-red-50 text-red-700 border-red-200",
+  kosong: "bg-red-50 text-red-700 border-red-200",
 };
 
 export default function Available({ items, filters, jenis_tali_jepit }: Props) {
@@ -50,7 +50,7 @@ export default function Available({ items, filters, jenis_tali_jepit }: Props) {
             <option value="">Semua kategori</option><option value="Tali Jepit">Tali Jepit</option><option value="Boloni Gunung">Boloni Gunung</option><option value="Outsole">Outsole</option>
           </select>
           <select value={status} onChange={event => { setStatus(event.target.value); applyFilter(event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
-            <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kritis">Stok kritis</option>
+          <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kosong">Stok kosong</option>
           </select>
         </div>
       </div>

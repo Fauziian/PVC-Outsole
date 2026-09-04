@@ -94,7 +94,7 @@ export default function Dashboard({
             <CardStat label="Varian Produk" value={stats.total_jenis_barang} icon={Package} color="bg-blue-500" />
             <CardStat label="Stok Level Aman" value={stats.stok_aman} icon={UserCheck} color="bg-emerald-500" />
             <CardStat label="Stok Level Menipis" value={stats.stok_menipis} icon={AlertTriangle} color="bg-amber-500" />
-            <CardStat label="Stok Level Kritis" value={stats.stok_kritis} icon={AlertTriangle} color="bg-rose-500" />
+            <CardStat label="Stok Kosong" value={stats.stok_kritis} icon={AlertTriangle} color="bg-rose-500" />
           </>
         )}
 

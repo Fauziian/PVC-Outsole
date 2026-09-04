@@ -42,15 +42,15 @@ class BarangPvc extends Model
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
     /**
-     * Dapatkan status stok: 'aman', 'menipis', atau 'kritis'.
-     * - kritis  : stok_saat_ini <= stok_minimum
-     * - menipis : stok_saat_ini <= stok_minimum * 1.3
+     * Dapatkan status stok: 'aman', 'menipis', atau 'kosong'.
+     * - kosong   : stok_saat_ini = 0
+     * - menipis  : stok tersisa, tetapi <= stok_minimum * 1.3
      * - aman    : di atas threshold menipis
      */
     public function getStatusStokAttribute(): string
     {
-        if ($this->stok_saat_ini <= $this->stok_minimum) {
-            return 'kritis';
+        if ($this->stok_saat_ini === 0) {
+            return 'kosong';
         }
         if ($this->stok_saat_ini <= ($this->stok_minimum * 1.3)) {
             return 'menipis';

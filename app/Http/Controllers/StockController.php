@@ -47,12 +47,12 @@ class StockController extends Controller
             });
         }
 
-        // Filter status stok (kritis, menipis, aman)
+        // Filter status stok (kosong, menipis, aman)
         if ($status = $request->input('status')) {
-            if ($status === 'kritis') {
-                $query->whereRaw('stok_saat_ini <= stok_minimum');
+            if ($status === 'kosong') {
+                $query->where('stok_saat_ini', 0);
             } elseif ($status === 'menipis') {
-                $query->whereRaw('stok_saat_ini <= (stok_minimum * 1.3) AND stok_saat_ini > stok_minimum');
+                $query->whereRaw('stok_saat_ini > 0 AND stok_saat_ini <= (stok_minimum * 1.3)');
             } elseif ($status === 'aman') {
                 $query->whereRaw('stok_saat_ini > (stok_minimum * 1.3)');
             }

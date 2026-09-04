@@ -70,8 +70,8 @@ class DashboardController extends Controller
             $data['stats'] = [
                 'total_jenis_barang' => BarangPvc::count(),
                 'stok_aman' => BarangPvc::whereRaw('stok_saat_ini > (stok_minimum * 1.3)')->count(),
-                'stok_menipis' => BarangPvc::whereRaw('stok_saat_ini <= (stok_minimum * 1.3) AND stok_saat_ini > stok_minimum')->count(),
-                'stok_kritis' => BarangPvc::whereRaw('stok_saat_ini <= stok_minimum')->count(),
+                'stok_menipis' => BarangPvc::whereRaw('stok_saat_ini > 0 AND stok_saat_ini <= (stok_minimum * 1.3)')->count(),
+                'stok_kritis' => BarangPvc::where('stok_saat_ini', 0)->count(),
             ];
 
             $data['notifikasi_kritis'] = [];
