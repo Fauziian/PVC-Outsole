@@ -11,17 +11,6 @@ error_reporting(E_ALL);
 
 define('LARAVEL_START', microtime(true));
 
-if (($_GET['__health'] ?? null) === '1') {
-    header('Content-Type: application/json');
-    echo json_encode([
-        'php' => PHP_VERSION,
-        'autoload' => file_exists(__DIR__ . '/../vendor/autoload.php'),
-        'database' => file_exists(__DIR__ . '/../database/database.sqlite'),
-        'sqlite' => extension_loaded('pdo_sqlite'),
-    ]);
-    exit;
-}
-
 // Register the Composer autoloader from vendor (installed by vercel-php builder)
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -60,30 +49,17 @@ if ($dbConnection === 'sqlite') {
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-try {
-    // Bootstrap Laravel application
-    /** @var Application $app */
-    $app = require_once __DIR__ . '/../bootstrap/app.php';
+// Bootstrap Laravel application
+/** @var Application $app */
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 
-    // Override storage path to /tmp for Vercel serverless
-    $app->useStoragePath('/tmp/storage');
+// Override storage path to /tmp for Vercel serverless
+$app->useStoragePath('/tmp/storage');
 
-    // The third-party Vercel PHP runtime may skip Laravel's provider manifest.
-    foreach ((new \Illuminate\Support\DefaultProviders)->toArray() as $provider) {
-        $app->register($provider);
-    }
-
-    // Handle the HTTP request
-    $app->handleRequest(Request::capture());
-} catch (Throwable $exception) {
-    if (($_GET['__diagnose'] ?? null) === '1') {
-        header('Content-Type: application/json', true, 500);
-        echo json_encode([
-            'type' => get_class($exception),
-            'message' => $exception->getMessage(),
-        ]);
-        exit;
-    }
-
-    throw $exception;
+// The third-party Vercel PHP runtime may skip Laravel's provider manifest.
+foreach ((new \Illuminate\Support\DefaultProviders)->toArray() as $provider) {
+    $app->register($provider);
 }
+
+// Handle the HTTP request
+$app->handleRequest(Request::capture());
