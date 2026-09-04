@@ -5,7 +5,7 @@ import { FileText, Printer, Download, Calendar } from "lucide-react";
 
 interface ReportsProps {
   periodes: string[];
-  role: "admin" | "hr" | "warehouse" | "management";
+  role: "admin" | "hr" | "warehouse";
 }
 
 export default function Index({ periodes, role }: ReportsProps) {
@@ -30,7 +30,7 @@ export default function Index({ periodes, role }: ReportsProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* MODUL HR: LAPORAN KEHADIRAN (PDF) */}
-        {(role === "hr" || role === "management") && (
+        {role === "hr" && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
@@ -70,7 +70,7 @@ export default function Index({ periodes, role }: ReportsProps) {
         )}
 
         {/* MODUL HR/ADMIN: LAPORAN PENGGAJIAN (EXCEL) */}
-        {(role === "hr" || role === "management") && (
+        {role === "hr" && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
@@ -110,7 +110,7 @@ export default function Index({ periodes, role }: ReportsProps) {
         )}
 
         {/* MODUL GUDANG: MUTASI STOK BAHAN PVC (EXCEL) */}
-        {(role === "warehouse" || role === "management") && (
+        {role === "warehouse" && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">

@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             'keterangan'             => 'Konfigurasi Default Proposal Kerja Praktik',
         ]);
 
-        // 2. Seed Pengguna (Users) sesuai 4 Role Utama
+        // 2. Seed Pengguna (Users) sesuai 3 Role Utama
         $usersData = [
             [
                 'nama'      => 'Andi Pratama',
@@ -57,10 +57,10 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'nama'      => 'Drs. Haryanto, M.M.',
-                'username'  => 'management',
+                'nama'      => 'Dewi Keuangan',
+                'username'  => 'finance',
                 'password'  => Hash::make('password'),
-                'role'      => 'management',
+                'role'      => 'hr',
                 'is_active' => true,
             ],
             [
@@ -79,10 +79,10 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'nama'      => 'Bambang Sutrisno',
-                'username'  => 'mgmt.bambang',
+                'username'  => 'finance.bambang',
                 'password'  => Hash::make('password'),
-                'role'      => 'management',
-                'is_active' => false, // Nonaktifkan satu user manajemen untuk demonstrasi
+                'role'      => 'hr',
+                'is_active' => false, // Nonaktifkan satu user HR/Keuangan untuk demonstrasi
             ]
         ];
 

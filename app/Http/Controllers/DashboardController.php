@@ -13,7 +13,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -89,36 +88,6 @@ class DashboardController extends Controller
                 ->get();
         } 
         
-        elseif ($role === 'management') {
-            // Ringkasan Keuangan (Bulan Lalu)
-            $bulanLalu = Carbon::now()->subMonth()->format('Y-m');
-            $data['stats'] = [
-                'total_karyawan_aktif' => Karyawan::where('is_active', true)->count(),
-                'total_gaji_bulan_lalu' => KomponenGaji::where('periode', $bulanLalu)->sum('total_gaji'),
-                'total_insentif_bulan_lalu' => KomponenGaji::where('periode', $bulanLalu)->sum('insentif_lembur'),
-                'total_potongan_bulan_lalu' => KomponenGaji::where('periode', $bulanLalu)->sum('potongan'),
-                'total_stok_pvc' => BarangPvc::sum('stok_saat_ini'),
-                'total_stok_kritis' => BarangPvc::whereRaw('stok_saat_ini <= stok_minimum')->count(),
-            ];
-
-            // Grafik tren pengeluaran gaji (6 bulan terakhir)
-            $trenGaji = DB::table('komponen_gaji')
-                ->select('periode', DB::raw('SUM(total_gaji) as total'))
-                ->groupBy('periode')
-                ->orderBy('periode', 'desc')
-                ->take(6)
-                ->get()
-                ->reverse()
-                ->values();
-                
-            $data['tren_gaji'] = $trenGaji;
-
-            // Grafik komposisi stok saat ini
-            $data['stok_pvc'] = BarangPvc::orderBy('stok_saat_ini', 'desc')
-                ->take(6)
-                ->get(['nama_barang', 'kode_barang', 'stok_saat_ini', 'stok_minimum', 'satuan']);
-        }
-
         // Shared logs aktivitas
         $data['aktifitas_terbaru'] = $this->getRecentActivities($role);
 

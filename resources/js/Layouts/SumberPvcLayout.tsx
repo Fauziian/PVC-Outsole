@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 
-type Role = "admin" | "hr" | "warehouse" | "management";
+type Role = "admin" | "hr" | "warehouse";
 type Screen = string;
 
 interface NavItem {
@@ -28,7 +28,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { id: "employees", label: "Data Karyawan", icon: UserCheck, route: "employees.index" },
     { id: "attendance", label: "Kehadiran Karyawan", icon: Clock, route: "attendance.index" },
     { id: "payroll", label: "Slip & Rekap Gaji", icon: CreditCard, route: "payroll.index" },
-    { id: "reports", label: "Laporan Modul", icon: FileText, route: "reports.index" },
+    { id: "reports", label: "Laporan HR/Keuangan", icon: FileText, route: "reports.index" },
   ],
   warehouse: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
@@ -36,19 +36,12 @@ const navByRole: Record<Role, NavItem[]> = {
     { id: "outgoing", label: "Barang Keluar", icon: Package, route: "stock.outgoing" },
     { id: "weekly-report", label: "Laporan Mingguan/Bulanan", icon: BarChart2, route: "stock.weekly-report" },
   ],
-  management: [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
-    { id: "payroll-summary", label: "Ringkasan Penggajian", icon: CreditCard, route: "management.payroll" },
-    { id: "stock-summary", label: "Ringkasan Stok", icon: Package, route: "management.stock" },
-    { id: "reports", label: "Laporan Modul", icon: FileText, route: "reports.index" },
-  ],
 };
 
 const roleLabels: Record<Role, string> = {
   admin: "Administrator",
-  hr: "Staf HR / Penggajian",
+  hr: "HR / Keuangan",
   warehouse: "Staf Gudang",
-  management: "Manajemen",
 };
 
 export default function SumberPvcLayout({ children }: { children: React.ReactNode }) {

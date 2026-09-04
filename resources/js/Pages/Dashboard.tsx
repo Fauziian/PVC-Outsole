@@ -5,12 +5,8 @@ import {
   Users, Package, Clock, CreditCard, AlertTriangle, 
   UserCheck, TrendingUp, RefreshCw, ArrowRight 
 } from "lucide-react";
-import { 
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
-  CartesianGrid, Tooltip, BarChart, Bar, Cell 
-} from "recharts";
 
-type Role = "admin" | "hr" | "warehouse" | "management";
+type Role = "admin" | "hr" | "warehouse";
 
 interface DashboardProps {
   role: Role;
@@ -19,8 +15,6 @@ interface DashboardProps {
   notifikasi_kritis?: any[];
   recent_masuk?: any[];
   recent_keluar?: any[];
-  tren_gaji?: any[];
-  stok_pvc?: any[];
   aktifitas_terbaru: any[];
 }
 
@@ -31,8 +25,6 @@ export default function Dashboard({
   notifikasi_kritis = [],
   recent_masuk = [],
   recent_keluar = [],
-  tren_gaji = [],
-  stok_pvc = [],
   aktifitas_terbaru = []
 }: DashboardProps) {
   
@@ -100,14 +92,6 @@ export default function Dashboard({
           </>
         )}
 
-        {role === "management" && (
-          <>
-            <CardStat label="Karyawan Aktif" value={stats.total_karyawan_aktif} icon={Users} color="bg-blue-500" />
-            <CardStat label="Rekap Gaji Bulan Lalu" value={idr(stats.total_gaji_bulan_lalu)} icon={CreditCard} color="bg-emerald-500" />
-            <CardStat label="Stok Fisik PVC" value={`${stats.total_stok_pvc} kg`} icon={Package} color="bg-indigo-500" />
-            <CardStat label="Stok Level Kritis" value={stats.total_stok_kritis} icon={AlertTriangle} color="bg-rose-500" />
-          </>
-        )}
       </div>
 
       {/* DETAILED CONTENT BASED ON ROLE */}
@@ -116,54 +100,6 @@ export default function Dashboard({
         {/* LEFT & CENTER PANELS (Charts / Tables) */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* MANAGEMENT CHARTS */}
-          {role === "management" && (
-            <>
-              {/* Tren Gaji (Recharts AreaChart) */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-                <h3 className="text-sm font-bold text-slate-800">Tren Total Pengeluaran Gaji (6 Periode Terakhir)</h3>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={tren_gaji}>
-                      <defs>
-                        <linearGradient id="gajiColor" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="periode" stroke="#94a3b8" fontSize={11} />
-                      <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => `Rp ${v/1000000}jt`} />
-                      <Tooltip formatter={(v: any) => [idr(v), "Total Gaji"]} />
-                      <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#gajiColor)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Komposisi Stok (Recharts BarChart) */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-                <h3 className="text-sm font-bold text-slate-800">Kuantitas Stok Bahan Baku PVC Saat Ini</h3>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={stok_pvc}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="kode_barang" stroke="#94a3b8" fontSize={11} />
-                      <YAxis stroke="#94a3b8" fontSize={11} />
-                      <Tooltip formatter={(v: any, name: any, props: any) => [`${v} ${props.payload.satuan}`, "Stok Saat Ini"]} />
-                      <Bar dataKey="stok_saat_ini" radius={[4, 4, 0, 0]}>
-                        {stok_pvc.map((entry, index) => {
-                          const isLow = entry.stok_saat_ini <= entry.stok_minimum;
-                          return <Cell key={`cell-${index}`} fill={isLow ? "#f43f5e" : "#6366f1"} />;
-                        })}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </>
-          )}
-
           {/* HR TABLES (Recent Attendance) */}
           {role === "hr" && (
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">

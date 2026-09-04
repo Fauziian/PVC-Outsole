@@ -59,7 +59,7 @@ class UserController extends Controller
             'nama' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'unique:users,username', 'max:50', 'alpha_dash'],
             'password' => ['required', 'string', 'min:6'],
-            'role' => ['required', 'in:admin,hr,warehouse,management'],
+            'role' => ['required', 'in:admin,hr,warehouse'],
             'is_active' => ['required', 'boolean'],
         ]);
 
@@ -85,7 +85,7 @@ class UserController extends Controller
                 'alpha_dash', 
                 Rule::unique('users', 'username')->ignore($user->id)
             ],
-            'role' => ['required', 'in:admin,hr,warehouse,management'],
+            'role' => ['required', 'in:admin,hr,warehouse'],
             'is_active' => ['required', 'boolean'],
         ]);
 

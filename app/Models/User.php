@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * Model: User (PENGGUNA)
  * Sesuai ERD Proposal: id_pengguna, nama, username, password_hash, role
  *
- * Role yang valid: admin | hr | warehouse | management
+ * Role yang valid: admin | hr | warehouse
  */
 class User extends Authenticatable
 {
@@ -77,7 +77,6 @@ class User extends Authenticatable
     public function isAdmin(): bool      { return $this->role === 'admin'; }
     public function isHr(): bool         { return $this->role === 'hr'; }
     public function isWarehouse(): bool  { return $this->role === 'warehouse'; }
-    public function isManagement(): bool { return $this->role === 'management'; }
 
     // ─── Relationships ────────────────────────────────────────────────────────────
 

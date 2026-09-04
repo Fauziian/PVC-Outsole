@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nama');                                                // nama lengkap pengguna
             $table->string('username')->unique();                                  // username login (unik)
             $table->string('password');                                            // password_hash (Laravel stores as 'password')
-            $table->enum('role', ['admin', 'hr', 'warehouse', 'management']);     // role RBAC
+            $table->enum('role', ['admin', 'hr', 'warehouse']);                   // role RBAC
             $table->boolean('is_active')->default(true);                          // status akun aktif/nonaktif
             $table->timestamp('last_login_at')->nullable();                       // waktu login terakhir
             $table->rememberToken();

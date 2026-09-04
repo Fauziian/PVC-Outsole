@@ -7,7 +7,7 @@ interface User {
   id: number;
   nama: string;
   username: string;
-  role: "admin" | "hr" | "warehouse" | "management";
+  role: "admin" | "hr" | "warehouse";
   is_active: boolean;
   last_login_at?: string;
 }
@@ -133,9 +133,8 @@ export default function Index({ users, filters }: IndexProps) {
 
   const roleLabels: Record<string, string> = {
     admin: "Administrator",
-    hr: "Staf HR / Penggajian",
+    hr: "HR / Keuangan",
     warehouse: "Staf Gudang",
-    management: "Manajemen",
   };
 
   return (
@@ -178,9 +177,8 @@ export default function Index({ users, filters }: IndexProps) {
           >
             <option value="">Semua Hak Akses (Role)</option>
             <option value="admin">Administrator</option>
-            <option value="hr">HRD Staff</option>
+            <option value="hr">HR / Keuangan</option>
             <option value="warehouse">Warehouse Staff</option>
-            <option value="management">Management</option>
           </select>
 
           <select
@@ -385,9 +383,8 @@ export default function Index({ users, filters }: IndexProps) {
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white font-semibold disabled:bg-slate-50 disabled:text-slate-400"
                 >
                   <option value="admin">Administrator</option>
-                  <option value="hr">Staf HR / Penggajian</option>
+                  <option value="hr">HR / Keuangan</option>
                   <option value="warehouse">Staf Gudang (Warehouse)</option>
-                  <option value="management">Manajemen (Pimpinan)</option>
                 </select>
                 {editingUser?.id === currentUser.id && (
                   <span className="text-[9px] text-slate-400 italic">Anda tidak dapat mengubah role Anda sendiri.</span>

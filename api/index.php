@@ -47,6 +47,14 @@ if ($dbConnection === 'sqlite') {
         copy($srcPath, $dbPath);
         @chmod($dbPath, 0666);
     }
+
+    // Compatibility for the bundled demo database: the former "management"
+    // account is now part of HR/Keuangan. Normal installations receive the
+    // same change through the application migration.
+    if (file_exists($dbPath)) {
+        (new PDO('sqlite:' . $dbPath))->exec("UPDATE users SET role = 'hr' WHERE role = 'management'");
+    }
+
     putenv('DB_DATABASE=' . $dbPath);
     $_ENV['DB_DATABASE'] = $dbPath;
     $_SERVER['DB_DATABASE'] = $dbPath;

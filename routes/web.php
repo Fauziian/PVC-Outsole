@@ -36,7 +36,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/payroll/settings', [PayrollController::class, 'updateSettings'])->name('payroll.settings.update');
     });
 
-    // 3. Modul HR / Penggajian (Role: hr)
+    // 3. Modul HR / Keuangan dan Penggajian (Role: hr)
     Route::middleware(['role:hr'])->group(function () {
         // Data Karyawan
         Route::get('/employees', [KaryawanController::class, 'index'])->name('employees.index');
@@ -78,17 +78,9 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
-    // 5. Modul Manajemen (Role: management)
-    Route::middleware(['role:management'])->group(function () {
-        // Monitoring Finansial Penggajian
-        Route::get('/management/payroll', [PayrollController::class, 'index'])->name('management.payroll');
-        // Monitoring Mutasi Stok Gudang
-        Route::get('/management/stock', [StockController::class, 'index'])->name('management.stock');
-    });
-
-    // 6. Laporan Index page (Aksesible untuk HR, Warehouse, Management)
+    // 5. Laporan HR/Keuangan
     Route::get('/reports', [ReportController::class, 'index'])
-        ->middleware(['role:hr,management'])
+        ->middleware(['role:hr'])
         ->name('reports.index');
 
     // Profile standard breeze routes

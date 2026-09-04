@@ -118,7 +118,7 @@ export default function Login({ status }: { status?: string }) {
 
           {/* Quick Demo Info */}
           <div className="text-[10px] text-slate-500 font-semibold border-t border-slate-700/50 pt-4 text-center">
-            * Gunakan username (seperti: <strong className="text-slate-400">admin</strong>, <strong className="text-slate-400">hr</strong>, <strong className="text-slate-400">warehouse</strong>, <strong className="text-slate-400">management</strong>) dengan password default <strong className="text-slate-400">password</strong> untuk simulasi login role.
+            * Gunakan username (seperti: <strong className="text-slate-400">admin</strong>, <strong className="text-slate-400">hr</strong>, atau <strong className="text-slate-400">warehouse</strong>) dengan password default <strong className="text-slate-400">password</strong> untuk simulasi login role.
           </div>
 
         </div>
