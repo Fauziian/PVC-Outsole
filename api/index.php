@@ -60,12 +60,25 @@ if ($dbConnection === 'sqlite') {
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-// Bootstrap Laravel application
-/** @var Application $app */
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+try {
+    // Bootstrap Laravel application
+    /** @var Application $app */
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// Override storage path to /tmp for Vercel serverless
-$app->useStoragePath('/tmp/storage');
+    // Override storage path to /tmp for Vercel serverless
+    $app->useStoragePath('/tmp/storage');
 
-// Handle the HTTP request
-$app->handleRequest(Request::capture());
+    // Handle the HTTP request
+    $app->handleRequest(Request::capture());
+} catch (Throwable $exception) {
+    if (($_GET['__diagnose'] ?? null) === '1') {
+        header('Content-Type: application/json', true, 500);
+        echo json_encode([
+            'type' => get_class($exception),
+            'message' => $exception->getMessage(),
+        ]);
+        exit;
+    }
+
+    throw $exception;
+}
