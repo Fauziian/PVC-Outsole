@@ -269,7 +269,10 @@ class DatabaseSeeder extends Seeder
 
         $barangs = [];
         foreach ($barangData as $b) {
-            $barangs[$b['kode_barang']] = BarangPvc::create($b);
+            $barangs[$b['kode_barang']] = BarangPvc::updateOrCreate(
+                ['kode_barang' => $b['kode_barang']],
+                $b
+            );
         }
 
         // 6. Contoh hasil cetak yang masuk ke gudang.

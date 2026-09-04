@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
+use Carbon\Carbon;
 
 class StockController extends Controller
 {
@@ -186,8 +187,7 @@ class StockController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $barangList = BarangPvc::where('stok_saat_ini', '>', 0)
-            ->orderBy('nama_barang', 'asc')
+        $barangList = BarangPvc::orderBy('kategori')->orderBy('jenis')->orderBy('warna')
             ->get(['id', 'nama_barang', 'kode_barang', 'kategori', 'jenis', 'warna', 'satuan', 'stok_saat_ini']);
 
         return Inertia::render('Stock/Outgoing', [
@@ -222,6 +222,58 @@ class StockController extends Controller
         }
 
         return redirect()->back()->with('success', count($validated['items']).' produk berhasil dikirim ke pelanggan.');
+    }
+
+    /**
+     * Ringkasan mutasi stok per minggu untuk staf gudang.
+     */
+    public function weeklyReport(Request $request): Response
+    {
+        $validated = $request->validate(['week' => ['nullable', 'date']]);
+        $requestedDate = $validated['week'] ?? now()->toDateString();
+        $start = Carbon::parse($requestedDate)->startOfWeek(Carbon::MONDAY);
+        $end = $start->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $incoming = BarangMasuk::query()
+            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->selectRaw('id_barang, SUM(jumlah) as total')
+            ->groupBy('id_barang')
+            ->pluck('total', 'id_barang');
+
+        $outgoing = BarangKeluar::query()
+            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->selectRaw('id_barang, SUM(jumlah) as total')
+            ->groupBy('id_barang')
+            ->pluck('total', 'id_barang');
+
+        $productIds = $incoming->keys()->merge($outgoing->keys())->unique();
+        $rows = BarangPvc::query()
+            ->whereIn('id', $productIds)
+            ->orderBy('kategori')->orderBy('jenis')->orderBy('warna')
+            ->get(['id', 'kategori', 'jenis', 'warna'])
+            ->map(fn (BarangPvc $product) => [
+                'id' => $product->id,
+                'kategori' => $product->kategori,
+                'jenis' => $product->jenis,
+                'warna' => $product->warna,
+                'masuk' => (int) ($incoming[$product->id] ?? 0),
+                'keluar' => (int) ($outgoing[$product->id] ?? 0),
+                'selisih' => (int) ($incoming[$product->id] ?? 0) - (int) ($outgoing[$product->id] ?? 0),
+            ])->values();
+
+        return Inertia::render('Stock/WeeklyReport', [
+            'period' => [
+                'week' => $start->toDateString(),
+                'start' => $start->translatedFormat('d M Y'),
+                'end' => $end->translatedFormat('d M Y'),
+            ],
+            'rows' => $rows,
+            'totals' => [
+                'masuk' => (int) $incoming->sum(),
+                'keluar' => (int) $outgoing->sum(),
+                'selisih' => (int) $incoming->sum() - (int) $outgoing->sum(),
+            ],
+        ]);
     }
 
     /**

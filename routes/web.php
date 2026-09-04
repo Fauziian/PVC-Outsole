@@ -71,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stock/outgoing', [StockController::class, 'outgoing'])->name('stock.outgoing');
         Route::post('/stock/outgoing', [StockController::class, 'storeOutgoing'])->name('stock.outgoing.store');
 
+        // Laporan mingguan mutasi barang jadi
+        Route::get('/stock/weekly-report', [StockController::class, 'weeklyReport'])->name('stock.weekly-report');
+
     });
 
     // 5. Modul Manajemen (Role: management)

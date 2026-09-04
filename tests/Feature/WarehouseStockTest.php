@@ -6,6 +6,7 @@ use App\Models\BarangPvc;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 class WarehouseStockTest extends TestCase
 {
@@ -69,5 +70,31 @@ class WarehouseStockTest extends TestCase
         $this->assertSame(75, $first->fresh()->stok_saat_ini);
         $this->assertSame(50, $second->fresh()->stok_saat_ini);
         $this->assertDatabaseHas('barang_keluar', ['tujuan_penggunaan' => 'Toko Sandal Jaya']);
+    }
+
+    public function test_warehouse_can_view_weekly_stock_report(): void
+    {
+        $product = $this->product('TJ-TEST-WEEK', 100);
+        $warehouse = $this->warehouse();
+
+        $this->actingAs($warehouse)->post(route('stock.incoming.store'), [
+            'items' => [['id_barang' => $product->id, 'tanggal' => '2026-09-02', 'jumlah' => 20, 'keterangan' => null]],
+        ]);
+
+        $this->actingAs($warehouse)->post(route('stock.outgoing.store'), [
+            'pelanggan' => 'Pelanggan Test',
+            'items' => [['id_barang' => $product->id, 'tanggal' => '2026-09-03', 'jumlah' => 5, 'keterangan' => null]],
+        ]);
+
+        $this->actingAs($warehouse)
+            ->get(route('stock.weekly-report', ['week' => '2026-09-02']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Stock/WeeklyReport')
+                ->where('totals.masuk', 20)
+                ->where('totals.keluar', 5)
+                ->where('totals.selisih', 15)
+                ->has('rows', 1)
+            );
     }
 }
