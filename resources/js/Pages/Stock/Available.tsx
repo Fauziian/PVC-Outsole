@@ -11,7 +11,8 @@ type Product = {
 
 type Props = {
   items: { data: Product[]; links: Array<{ url: string | null; label: string; active: boolean }>; current_page: number; last_page: number; total: number };
-  filters: { search?: string; status?: string; kategori?: string };
+  filters: { search?: string; status?: string; kategori?: string; jenis?: string };
+  jenis_tali_jepit: string[];
 };
 
 const statusStyle = {
@@ -20,11 +21,12 @@ const statusStyle = {
   kritis: "bg-red-50 text-red-700 border-red-200",
 };
 
-export default function Available({ items, filters }: Props) {
+export default function Available({ items, filters, jenis_tali_jepit }: Props) {
   const [search, setSearch] = useState(filters.search ?? "");
   const [status, setStatus] = useState(filters.status ?? "");
   const [kategori, setKategori] = useState(filters.kategori ?? "");
-  const applyFilter = (nextStatus = status, nextKategori = kategori) => router.get(route("stock.available"), { search, status: nextStatus, kategori: nextKategori }, { preserveState: true, preserveScroll: true });
+  const [jenis, setJenis] = useState(filters.jenis ?? "");
+  const applyFilter = (nextStatus = status, nextKategori = kategori, nextJenis = jenis) => router.get(route("stock.available"), { search, status: nextStatus, kategori: nextKategori, jenis: nextJenis }, { preserveState: true, preserveScroll: true });
   const detail = (item: Product) => [item.jenis, item.warna].filter(Boolean).join(" — ") || item.nama_barang;
 
   return <SumberPvcLayout>
@@ -43,9 +45,12 @@ export default function Available({ items, filters }: Props) {
         <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, warna, atau kode..." className="w-full rounded-lg border-slate-200 py-2 pl-9 pr-3 text-xs" />
       </form>
       <div className="flex flex-col gap-2 sm:flex-row">
-        <select value={kategori} onChange={event => { setKategori(event.target.value); applyFilter(status, event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
+        <select value={kategori} onChange={event => { const nextKategori = event.target.value; const nextJenis = nextKategori === "Tali Jepit" ? jenis : ""; setKategori(nextKategori); setJenis(nextJenis); applyFilter(status, nextKategori, nextJenis); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
           <option value="">Semua kategori</option><option value="Tali Jepit">Tali Jepit</option><option value="Boloni Gunung">Boloni Gunung</option><option value="Outsole">Outsole</option>
         </select>
+        {kategori === "Tali Jepit" && <select value={jenis} onChange={event => { setJenis(event.target.value); applyFilter(status, kategori, event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
+          <option value="">Semua jenis jepit</option>{jenis_tali_jepit.map(item => <option key={item} value={item}>{item}</option>)}
+        </select>}
         <select value={status} onChange={event => { setStatus(event.target.value); applyFilter(event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
           <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kritis">Stok kritis</option>
         </select>
