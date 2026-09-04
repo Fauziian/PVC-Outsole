@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 class AbsensiController extends Controller
 {
@@ -24,7 +25,7 @@ class AbsensiController extends Controller
         $karyawanList = Karyawan::where('is_active', true)->orderBy('nama', 'asc')->get();
 
         // Ambil data absensi pada tanggal tersebut
-        $absensi = Absensi::where('tanggal', $tanggal->toDateString())
+        $absensi = Absensi::whereDate('tanggal', $tanggal->toDateString())
             ->get()
             ->keyBy('id_karyawan');
 
@@ -54,11 +55,11 @@ class AbsensiController extends Controller
         // Statistik Kehadiran Tanggal Terkait
         $stats = [
             'total' => count($karyawanList),
-            'penuh' => Absensi::where('tanggal', $tanggal->toDateString())->where('jam_normal', '>=', 8)->count(),
-            'jam_lebih' => Absensi::where('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Lembur')->count(),
-            'lembur' => Absensi::where('tanggal', $tanggal->toDateString())->sum('jam_lembur'),
-            'setengah_hari' => Absensi::where('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Setengah Hari')->count(),
-            'absen' => count($karyawanList) - Absensi::where('tanggal', $tanggal->toDateString())->count(),
+            'penuh' => Absensi::whereDate('tanggal', $tanggal->toDateString())->where('sudah_pulang', true)->count(),
+            'jam_lebih' => Absensi::whereDate('tanggal', $tanggal->toDateString())->where('status_kehadiran', 'Lembur')->count(),
+            'lembur' => Absensi::whereDate('tanggal', $tanggal->toDateString())->sum('jam_lembur'),
+            'setengah_hari' => 0,
+            'absen' => count($karyawanList) - Absensi::whereDate('tanggal', $tanggal->toDateString())->count(),
         ];
 
         return Inertia::render('Attendance/Index', [
@@ -77,18 +78,16 @@ class AbsensiController extends Controller
             'tanggal' => ['required', 'date'],
         ]);
 
+        $jamMasuk = now()->format('H:i');
         $sudahAda = Absensi::where('id_karyawan', $validated['id_karyawan'])
-            ->where('tanggal', $validated['tanggal'])
-            ->exists();
+            ->whereDate('tanggal', $validated['tanggal'])
+            ->first();
 
         if ($sudahAda) {
-            return redirect()->back()->with('error', 'Absensi karyawan ini sudah dicatat.');
+            return redirect()->back()->with('success', 'Karyawan ini sudah tercatat hadir. Silakan klik Pulang untuk memilih jam kerja.');
         }
 
-        $jamMasuk = now()->format('H:i');
-        Absensi::create([
-            'id_karyawan' => $validated['id_karyawan'],
-            'tanggal' => $validated['tanggal'],
+        $dataBaru = [
             'jam_masuk' => $jamMasuk,
             'jam_keluar' => $jamMasuk,
             'durasi_jam' => 0,
@@ -96,9 +95,27 @@ class AbsensiController extends Controller
             'jam_lembur' => 0,
             'status_kehadiran' => 'Setengah Hari',
             'sudah_pulang' => false,
-        ]);
+        ];
 
-        return redirect()->back()->with('success', 'Jam masuk berhasil dicatat. Klik Pulang saat pekerjaan selesai.');
+        try {
+            $absensi = Absensi::create([
+                'id_karyawan' => $validated['id_karyawan'],
+                'tanggal' => $validated['tanggal'],
+                ...$dataBaru,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            // Dua klik yang sangat cepat dapat tiba bersamaan. Data pertama
+            // sudah valid; ambil saja agar pengguna tidak menerima error 500.
+            $absensi = Absensi::where('id_karyawan', $validated['id_karyawan'])
+                ->whereDate('tanggal', $validated['tanggal'])
+                ->firstOrFail();
+        }
+
+        $pesan = $absensi->wasRecentlyCreated
+            ? 'Hadir / jam masuk berhasil dicatat. Klik Pulang saat pekerjaan selesai.'
+            : 'Karyawan ini sudah tercatat hadir. Silakan klik Pulang untuk memilih jam kerja.';
+
+        return redirect()->back()->with('success', $pesan);
     }
 
     /** Selesaikan absensi dengan memilih total durasi kerja 8--15 jam. */

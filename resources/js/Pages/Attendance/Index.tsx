@@ -26,8 +26,14 @@ const DURASI = [8, 9, 10, 11, 12, 13, 14, 15];
 export default function AttendanceIndex({ rows, stats, tanggal, formatted_tanggal }: Props) {
   const [selectedTanggal, setSelectedTanggal] = useState(tanggal);
   const [active, setActive] = useState<Row | null>(null);
+  const [checkingInId, setCheckingInId] = useState<number | null>(null);
   const { data, setData, put, processing, errors, reset } = useForm({ durasi_jam: 8, keterangan: "" });
-  const checkIn = (row: Row) => router.post(route("attendance.check-in"), { id_karyawan: row.id_karyawan, tanggal: selectedTanggal });
+  const checkIn = (row: Row) => {
+    setCheckingInId(row.id_karyawan);
+    router.post(route("attendance.check-in"), { id_karyawan: row.id_karyawan, tanggal: selectedTanggal }, {
+      onFinish: () => setCheckingInId(null),
+    });
+  };
   const checkOut = (event: React.FormEvent) => {
     event.preventDefault();
     if (!active?.absensi) return;
@@ -62,8 +68,8 @@ export default function AttendanceIndex({ rows, stats, tanggal, formatted_tangga
             <td className="px-6 py-4">{belumMasuk ? <span className="text-slate-400">Belum masuk</span> : <span className="font-bold text-emerald-600">{absensi!.jam_masuk}</span>}</td>
             <td className="px-6 py-4">{belumPulang || belumMasuk ? <span className="text-slate-400">Belum pulang</span> : <span className="font-bold text-slate-700">{absensi!.jam_keluar}</span>}</td>
             <td className="px-6 py-4">{belumPulang || belumMasuk ? <span className="text-slate-400">Pilih saat pulang</span> : <span className="font-bold text-slate-800">{absensi!.durasi_jam} jam</span>}</td>
-            <td className="px-6 py-4">{belumMasuk ? <Badge text="BELUM MASUK" type="pending" /> : belumPulang ? <Badge text="SEDANG BEKERJA" type="working" /> : absensi!.status_kehadiran === "Lembur" ? <Badge text="LEMBUR" type="overtime" /> : <Badge text="SELESAI" type="done" />}</td>
-            <td className="px-6 py-4 text-right">{belumMasuk ? <button onClick={() => checkIn(row)} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-emerald-700"><LogIn size={13} />Masuk</button> : belumPulang ? <button onClick={() => { setActive(row); setData({ durasi_jam: 8, keterangan: "" }); }} className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-blue-700"><LogOut size={13} />Pulang</button> : <span className="text-[10px] font-bold text-slate-400">Tercatat</span>}</td>
+            <td className="px-6 py-4">{belumMasuk ? <Badge text="BELUM MASUK" type="pending" /> : belumPulang ? <Badge text="HADIR / MASUK" type="working" /> : absensi!.status_kehadiran === "Lembur" ? <Badge text="LEMBUR" type="overtime" /> : <Badge text="SELESAI" type="done" />}</td>
+            <td className="px-6 py-4 text-right">{belumMasuk ? <button disabled={checkingInId === row.id_karyawan} onClick={() => checkIn(row)} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-emerald-700 disabled:opacity-50"><LogIn size={13} />{checkingInId === row.id_karyawan ? "Mencatat..." : "Masuk"}</button> : belumPulang ? <button onClick={() => { setActive(row); setData({ durasi_jam: 8, keterangan: "" }); }} className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-blue-700"><LogOut size={13} />Pulang</button> : <span className="text-[10px] font-bold text-slate-400">Tercatat</span>}</td>
           </tr>;
         })}</tbody>
       </table></div>
