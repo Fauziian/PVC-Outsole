@@ -21,7 +21,9 @@ const navByRole: Record<Role, NavItem[]> = {
   admin: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },
     { id: "users", label: "Manajemen Pengguna", icon: Users, route: "users.index" },
+    { id: "employees", label: "Data Karyawan", icon: UserCheck, route: "admin.employees" },
     { id: "settings", label: "Parameter Gaji", icon: Settings, route: "payroll.settings" },
+    { id: "reports", label: "Laporan Keseluruhan", icon: FileText, route: "admin.reports" },
   ],
   hr: [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, route: "dashboard" },

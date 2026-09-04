@@ -34,12 +34,10 @@ class DashboardController extends Controller
         // 1. Data Umum untuk Dashboard
         if ($role === 'admin') {
             $data['stats'] = [
-                'total_users' => User::count(),
-                'total_admin' => User::where('role', 'admin')->count(),
-                'total_hr' => User::where('role', 'hr')->count(),
-                'total_warehouse' => User::where('role', 'warehouse')->count(),
-                'active_users' => User::where('is_active', true)->count(),
-                'inactive_users' => User::where('is_active', false)->count(),
+                'total_karyawan' => Karyawan::where('is_active', true)->count(),
+                'hadir_hari_ini' => Absensi::where('tanggal', now()->toDateString())->count(),
+                'total_stok' => BarangPvc::sum('stok_saat_ini'),
+                'total_gaji_bulan_ini' => KomponenGaji::where('periode', Carbon::now()->format('Y-m'))->sum('total_gaji'),
                 'recent_logins' => User::whereNotNull('last_login_at')
                     ->orderBy('last_login_at', 'desc')
                     ->take(5)

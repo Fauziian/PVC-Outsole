@@ -34,6 +34,11 @@ Route::middleware(['auth'])->group(function () {
         // Pengaturan Gaji
         Route::get('/payroll/settings', [PayrollController::class, 'settings'])->name('payroll.settings');
         Route::post('/payroll/settings', [PayrollController::class, 'updateSettings'])->name('payroll.settings.update');
+        Route::get('/admin/employees', [KaryawanController::class, 'index'])->name('admin.employees');
+        Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.reports');
+        Route::get('/admin/reports/attendance/pdf', [ReportController::class, 'downloadAttendancePdf'])->name('admin.reports.attendance.pdf');
+        Route::get('/admin/reports/payroll/excel', [ReportController::class, 'exportPayrollExcel'])->name('admin.reports.payroll.excel');
+        Route::get('/admin/reports/stock/excel', [ReportController::class, 'exportStockExcel'])->name('admin.reports.stock.excel');
     });
 
     // 3. Modul HR / Keuangan dan Penggajian (Role: hr)

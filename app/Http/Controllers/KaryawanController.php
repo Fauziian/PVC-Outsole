@@ -17,6 +17,7 @@ class KaryawanController extends Controller
      */
     public function index(Request $request): Response
     {
+        $readOnly = $request->user()->role === 'admin';
         $query = Karyawan::with('pengguna');
 
         // Pencarian nama / jabatan
@@ -42,7 +43,7 @@ class KaryawanController extends Controller
         // Ambil data users yang belum dikaitkan ke karyawan manapun
         // untuk opsi relasi saat membuat/mengedit data karyawan
         $linkedUserIds = Karyawan::whereNotNull('id_pengguna')->pluck('id_pengguna')->toArray();
-        $availableUsers = User::where('is_active', true)
+        $availableUsers = $readOnly ? collect() : User::where('is_active', true)
             ->whereNotIn('id', $linkedUserIds)
             ->get(['id', 'nama', 'username', 'role']);
 
@@ -50,6 +51,8 @@ class KaryawanController extends Controller
             'karyawan' => $karyawan,
             'filters' => $request->only(['search', 'status']),
             'availableUsers' => $availableUsers,
+            'readOnly' => $readOnly,
+            'indexRoute' => $readOnly ? 'admin.employees' : 'employees.index',
         ]);
     }
 

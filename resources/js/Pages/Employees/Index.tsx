@@ -36,9 +36,11 @@ interface IndexProps {
     username: string;
     role: string;
   }[];
+  readOnly?: boolean;
+  indexRoute?: string;
 }
 
-export default function Index({ karyawan, filters, availableUsers }: IndexProps) {
+export default function Index({ karyawan, filters, availableUsers, readOnly = false, indexRoute = "employees.index" }: IndexProps) {
   const [search, setSearch] = useState(filters.search || "");
   const [status, setStatus] = useState(filters.status || "");
   const [modalOpen, setModalOpen] = useState(false);
@@ -56,12 +58,12 @@ export default function Index({ karyawan, filters, availableUsers }: IndexProps)
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.get(route("employees.index"), { search, status }, { preserveState: true });
+    router.get(route(indexRoute), { search, status }, { preserveState: true });
   };
 
   const handleStatusFilterChange = (val: string) => {
     setStatus(val);
-    router.get(route("employees.index"), { search, status: val }, { preserveState: true });
+    router.get(route(indexRoute), { search, status: val }, { preserveState: true });
   };
 
   const openAddModal = () => {
@@ -116,15 +118,15 @@ export default function Index({ karyawan, filters, availableUsers }: IndexProps)
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-800">Data Karyawan</h1>
-          <p className="text-xs text-slate-400">Kelola biodata profil, jabatan, masa kerja, dan status akun terhubung karyawan.</p>
+          <p className="text-xs text-slate-400">{readOnly ? "Tampilan baca-saja seluruh data karyawan. Absensi dan penggajian dikelola oleh HR." : "Kelola biodata profil, jabatan, masa kerja, dan status akun terhubung karyawan."}</p>
         </div>
-        <button
+        {!readOnly && <button
           onClick={openAddModal}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-500/10 transition-all cursor-pointer self-start"
         >
           <Plus size={14} />
           Tambah Karyawan
-        </button>
+        </button>}
       </div>
 
       {/* SEARCH AND FILTERS */}
@@ -165,7 +167,7 @@ export default function Index({ karyawan, filters, availableUsers }: IndexProps)
                 <th className="px-6 py-4">Masa Kerja</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Akun Sistem</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
+                {!readOnly && <th className="px-6 py-4 text-right">Aksi</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-xs">
@@ -213,7 +215,7 @@ export default function Index({ karyawan, filters, availableUsers }: IndexProps)
                         <span className="text-[10px] text-slate-400 italic">Belum dikaitkan</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                    {!readOnly && <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
                       <button
                         onClick={() => openEditModal(emp)}
                         className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
@@ -228,7 +230,7 @@ export default function Index({ karyawan, filters, availableUsers }: IndexProps)
                       >
                         <Trash2 size={13} />
                       </button>
-                    </td>
+                    </td>}
                   </tr>
                 ))
               )}

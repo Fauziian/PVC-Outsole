@@ -30,7 +30,7 @@ export default function Index({ periodes, role }: ReportsProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* MODUL HR: LAPORAN KEHADIRAN (PDF) */}
-        {role === "hr" && (
+        {(role === "hr" || role === "admin") && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
@@ -59,7 +59,7 @@ export default function Index({ periodes, role }: ReportsProps) {
               </div>
 
               <a
-                href={route("reports.attendance.pdf", { bulan: selectedBulan })}
+                href={route(role === "admin" ? "admin.reports.attendance.pdf" : "reports.attendance.pdf", { bulan: selectedBulan })}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-500/10 transition-all text-center"
               >
                 <Printer size={13} />
@@ -70,7 +70,7 @@ export default function Index({ periodes, role }: ReportsProps) {
         )}
 
         {/* MODUL HR/ADMIN: LAPORAN PENGGAJIAN (EXCEL) */}
-        {role === "hr" && (
+        {(role === "hr" || role === "admin") && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
@@ -99,7 +99,7 @@ export default function Index({ periodes, role }: ReportsProps) {
               </div>
 
               <a
-                href={route("reports.payroll.excel", { periode: selectedPeriodePayroll })}
+                href={route(role === "admin" ? "admin.reports.payroll.excel" : "reports.payroll.excel", { periode: selectedPeriodePayroll })}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-500/10 transition-all text-center"
               >
                 <Download size={13} />
@@ -110,7 +110,7 @@ export default function Index({ periodes, role }: ReportsProps) {
         )}
 
         {/* MODUL GUDANG: MUTASI STOK BAHAN PVC (EXCEL) */}
-        {role === "warehouse" && (
+        {(role === "warehouse" || role === "admin") && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
@@ -139,7 +139,7 @@ export default function Index({ periodes, role }: ReportsProps) {
               </div>
 
               <a
-                href={route("reports.stock.excel", { bulan: selectedBulan })}
+                href={route(role === "admin" ? "admin.reports.stock.excel" : "reports.stock.excel", { bulan: selectedBulan })}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/10 transition-all text-center"
               >
                 <Download size={13} />

@@ -73,10 +73,10 @@ export default function Dashboard({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {role === "admin" && (
           <>
-            <CardStat label="Total Akun Pengguna" value={stats.total_users} icon={Users} color="bg-blue-500" />
-            <CardStat label="Administrator" value={stats.total_admin} icon={Shield} color="bg-rose-500" />
-            <CardStat label="HR / Keuangan" value={stats.total_hr} icon={UserCheck} color="bg-emerald-500" />
-            <CardStat label="Staff Gudang" value={stats.total_warehouse} icon={Package} color="bg-indigo-500" />
+            <CardStat label="Karyawan Aktif" value={stats.total_karyawan} icon={Users} color="bg-blue-500" />
+            <CardStat label="Absensi Hari Ini" value={stats.hadir_hari_ini} icon={UserCheck} color="bg-emerald-500" />
+            <CardStat label="Total Stok Tersedia" value={`${stats.total_stok} kodi`} icon={Package} color="bg-indigo-500" />
+            <CardStat label="Total Gaji Bulan Ini" value={idr(stats.total_gaji_bulan_ini)} icon={CreditCard} color="bg-purple-500" />
           </>
         )}
 
