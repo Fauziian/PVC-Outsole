@@ -11,7 +11,7 @@ type Product = {
 
 type Props = {
   items: { data: Product[]; links: Array<{ url: string | null; label: string; active: boolean }>; current_page: number; last_page: number; total: number };
-  filters: { search?: string; status?: string };
+  filters: { search?: string; status?: string; kategori?: string };
 };
 
 const statusStyle = {
@@ -23,7 +23,8 @@ const statusStyle = {
 export default function Available({ items, filters }: Props) {
   const [search, setSearch] = useState(filters.search ?? "");
   const [status, setStatus] = useState(filters.status ?? "");
-  const applyFilter = (nextStatus = status) => router.get(route("stock.available"), { search, status: nextStatus }, { preserveState: true, preserveScroll: true });
+  const [kategori, setKategori] = useState(filters.kategori ?? "");
+  const applyFilter = (nextStatus = status, nextKategori = kategori) => router.get(route("stock.available"), { search, status: nextStatus, kategori: nextKategori }, { preserveState: true, preserveScroll: true });
   const detail = (item: Product) => [item.jenis, item.warna].filter(Boolean).join(" — ") || item.nama_barang;
 
   return <SumberPvcLayout>
@@ -41,9 +42,14 @@ export default function Available({ items, filters }: Props) {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari produk, warna, atau kode..." className="w-full rounded-lg border-slate-200 py-2 pl-9 pr-3 text-xs" />
       </form>
-      <select value={status} onChange={event => { setStatus(event.target.value); applyFilter(event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs md:w-52">
-        <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kritis">Stok kritis</option>
-      </select>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <select value={kategori} onChange={event => { setKategori(event.target.value); applyFilter(status, event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
+          <option value="">Semua kategori</option><option value="Tali Jepit">Tali Jepit</option><option value="Boloni Gunung">Boloni Gunung</option><option value="Outsole">Outsole</option>
+        </select>
+        <select value={status} onChange={event => { setStatus(event.target.value); applyFilter(event.target.value); }} className="rounded-lg border-slate-200 py-2 text-xs sm:w-48">
+          <option value="">Semua status stok</option><option value="aman">Stok aman</option><option value="menipis">Stok menipis</option><option value="kritis">Stok kritis</option>
+        </select>
+      </div>
     </div>
 
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

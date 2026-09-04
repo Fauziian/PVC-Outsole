@@ -58,6 +58,10 @@ class StockController extends Controller
             }
         }
 
+        if ($kategori = $request->input('kategori')) {
+            $query->where('kategori', $kategori);
+        }
+
         $items = $query->orderBy('nama_barang', 'asc')->paginate(10)->withQueryString();
 
         // Tambahkan computed status_stok ke paginated items
@@ -68,7 +72,7 @@ class StockController extends Controller
 
         return Inertia::render('Stock/Available', [
             'items' => $items,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only(['search', 'status', 'kategori']),
         ]);
     }
 
