@@ -49,18 +49,23 @@ if ($dbConnection === 'sqlite') {
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-// Bootstrap Laravel application
-/** @var Application $app */
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+try {
+    // Bootstrap Laravel application
+    /** @var Application $app */
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// Override storage path to /tmp for Vercel serverless
-$app->useStoragePath('/tmp/storage');
+    // Override storage path to /tmp for Vercel serverless
+    $app->useStoragePath('/tmp/storage');
 
-// The third-party Vercel PHP runtime may skip Laravel's provider manifest.
-$app->make(\Illuminate\Contracts\Http\Kernel::class)->bootstrap();
-foreach ((new \Illuminate\Support\DefaultProviders)->toArray() as $provider) {
-    $app->register($provider);
+    // Handle the HTTP request
+    $app->handleRequest(Request::capture());
+} catch (Throwable $exception) {
+    if (($_GET['diagnostic'] ?? '') === 'warehouse-2026') {
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo get_class($exception) . ': ' . $exception->getMessage() . "\n";
+        echo $exception->getFile() . ':' . $exception->getLine() . "\n";
+        echo $exception->getTraceAsString();
+    }
+
+    throw $exception;
 }
-
-// Handle the HTTP request
-$app->handleRequest(Request::capture());
