@@ -30,6 +30,26 @@ class StockController extends Controller
         $this->stockService = $stockService;
     }
 
+    /** Halaman Admin untuk mengatur master produk jadi dan variannya. */
+    public function master(Request $request): Response
+    {
+        $query = BarangPvc::query();
+        if ($search = $request->input('search')) {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('kode_barang', 'like', "%{$search}%")
+                    ->orWhere('kategori', 'like', "%{$search}%")
+                    ->orWhere('jenis', 'like', "%{$search}%")
+                    ->orWhere('warna', 'like', "%{$search}%");
+            });
+        }
+
+        return Inertia::render('Stock/Master', [
+            'items' => $query->orderBy('kategori')->orderBy('jenis')->orderBy('warna')->paginate(12)->withQueryString(),
+            'filters' => $request->only('search'),
+        ]);
+    }
+
     /**
      * Tampilkan katalog dan stok barang jadi.
      */

@@ -35,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/payroll/settings', [PayrollController::class, 'settings'])->name('payroll.settings');
         Route::post('/payroll/settings', [PayrollController::class, 'updateSettings'])->name('payroll.settings.update');
         Route::get('/admin/employees', [KaryawanController::class, 'index'])->name('admin.employees');
+        Route::get('/admin/master-produk', [StockController::class, 'master'])->name('admin.master-products');
+        Route::post('/admin/master-produk', [StockController::class, 'storeItem'])->name('admin.master-products.store');
+        Route::put('/admin/master-produk/{item}', [StockController::class, 'updateItem'])->name('admin.master-products.update');
+        Route::delete('/admin/master-produk/{item}', [StockController::class, 'destroyItem'])->name('admin.master-products.destroy');
         Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.reports');
         Route::get('/admin/reports/attendance/pdf', [ReportController::class, 'downloadAttendancePdf'])->name('admin.reports.attendance.pdf');
         Route::get('/admin/reports/payroll/excel', [ReportController::class, 'exportPayrollExcel'])->name('admin.reports.payroll.excel');
