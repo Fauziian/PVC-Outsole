@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
 import { Head, Link } from "@inertiajs/react";
 import { 
-  Users, Package, Clock, CreditCard, AlertTriangle, 
+  Users, Package, Clock, CreditCard, AlertTriangle, Shield,
   UserCheck, TrendingUp, RefreshCw, ArrowRight 
 } from "lucide-react";
 
@@ -74,7 +74,7 @@ export default function Dashboard({
         {role === "admin" && (
           <>
             <CardStat label="Total Akun Pengguna" value={stats.total_users} icon={Users} color="bg-blue-500" />
-            <CardStat label="Administrator" value={stats.total_admin} icon={ShieldAlert} color="bg-rose-500" />
+            <CardStat label="Administrator" value={stats.total_admin} icon={Shield} color="bg-rose-500" />
             <CardStat label="HR / Keuangan" value={stats.total_hr} icon={UserCheck} color="bg-emerald-500" />
             <CardStat label="Staff Gudang" value={stats.total_warehouse} icon={Package} color="bg-indigo-500" />
           </>
