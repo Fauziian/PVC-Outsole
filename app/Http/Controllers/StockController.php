@@ -117,7 +117,7 @@ class StockController extends Controller
     public function storeItem(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'nama_barang' => ['required', 'string', 'max:255'],
+            'nama_barang' => ['nullable', 'string', 'max:255'],
             'kode_barang' => ['required', 'string', 'unique:barang_pvc,kode_barang', 'max:50'],
             'kategori' => ['required', 'in:Tali Jepit,Outsole,Boloni Gunung'],
             'jenis' => ['nullable', 'string', 'max:100'],
@@ -128,6 +128,8 @@ class StockController extends Controller
         ]);
 
         $this->normalizeProductVariant($validated, $request);
+        $validated['nama_barang'] = $this->productName($validated);
+        $validated['keterangan'] = null;
         $validated['satuan'] = 'kodi';
         BarangPvc::create($validated);
 
@@ -140,7 +142,7 @@ class StockController extends Controller
     public function updateItem(Request $request, BarangPvc $item): RedirectResponse
     {
         $validated = $request->validate([
-            'nama_barang' => ['required', 'string', 'max:255'],
+            'nama_barang' => ['nullable', 'string', 'max:255'],
             'kode_barang' => ['required', 'string', 'max:50', 'unique:barang_pvc,kode_barang,' . $item->id],
             'kategori' => ['required', 'in:Tali Jepit,Outsole,Boloni Gunung'],
             'jenis' => ['nullable', 'string', 'max:100'],
@@ -150,6 +152,8 @@ class StockController extends Controller
         ]);
 
         $this->normalizeProductVariant($validated, $request);
+        $validated['nama_barang'] = $this->productName($validated);
+        $validated['keterangan'] = null;
         $item->update($validated);
 
         return redirect()->back()->with('success', 'Data produk berhasil diperbarui.');
@@ -184,6 +188,18 @@ class StockController extends Controller
                 'warna' => ['required', 'string', 'max:100'],
             ]);
         }
+    }
+
+    /** Bentuk nama otomatis agar selalu mengikuti kombinasi master produk. */
+    private function productName(array $product): string
+    {
+        if ($product['kategori'] === 'Outsole') {
+            return $product['jenis'];
+        }
+
+        return $product['kategori'] === 'Boloni Gunung'
+            ? "Boloni Gunung - {$product['warna']}"
+            : "{$product['jenis']} - {$product['warna']}";
     }
 
     /**
