@@ -109,6 +109,12 @@ class KaryawanController extends Controller
      */
     public function destroy(Karyawan $employee): RedirectResponse
     {
+        // K-05: Cegah penghapusan jika karyawan memiliki riwayat absensi atau slip gaji
+        if ($employee->absensi()->exists() || $employee->komponenGaji()->exists()) {
+            return redirect()->back()
+                ->with('error', 'Karyawan tidak dapat dihapus karena memiliki riwayat absensi atau slip gaji. Silakan nonaktifkan status karyawan.');
+        }
+
         $employee->delete();
 
         return redirect()->route('employees.index')

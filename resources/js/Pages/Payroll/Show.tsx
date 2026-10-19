@@ -40,10 +40,9 @@ interface PayrollSlip {
 
 interface ShowProps {
   payroll: PayrollSlip;
-  setting: any;
 }
 
-export default function Show({ payroll, setting }: ShowProps) {
+export default function Show({ payroll }: ShowProps) {
   // Format IDR
   const idr = (val: number) => {
     return new Intl.NumberFormat("id-ID", {

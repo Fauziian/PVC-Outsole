@@ -16,8 +16,8 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Middleware auth untuk semua modul
-Route::middleware(['auth'])->group(function () {
+// Middleware auth dan active untuk semua modul
+Route::middleware(['auth', 'active'])->group(function () {
     
     // 1. Dashboard (Aksesible untuk semua role terautentikasi)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -62,9 +62,9 @@ Route::middleware(['auth'])->group(function () {
         // Komponen Gaji & Slip
         Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
         Route::post('/payroll/calculate', [PayrollController::class, 'calculatePeriod'])->name('payroll.calculate');
-        Route::get('/payroll/{payroll}', [PayrollController::class, 'show'])->name('payroll.show');
-        Route::put('/payroll/{payroll}/finalize', [PayrollController::class, 'finalize'])->name('payroll.finalize');
-        Route::get('/payroll/{payroll}/pdf', [PayrollController::class, 'downloadPdf'])->name('payroll.pdf');
+        Route::get('/payroll/{payroll}', [PayrollController::class, 'show'])->whereNumber('payroll')->name('payroll.show');
+        Route::put('/payroll/{payroll}/finalize', [PayrollController::class, 'finalize'])->whereNumber('payroll')->name('payroll.finalize');
+        Route::get('/payroll/{payroll}/pdf', [PayrollController::class, 'downloadPdf'])->whereNumber('payroll')->name('payroll.pdf');
 
         // Laporan HR (Unduh PDF/Excel)
         Route::get('/reports/attendance/pdf', [ReportController::class, 'downloadAttendancePdf'])->name('reports.attendance.pdf');
@@ -84,17 +84,24 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stock/outgoing', [StockController::class, 'outgoing'])->name('stock.outgoing');
         Route::post('/stock/outgoing', [StockController::class, 'storeOutgoing'])->name('stock.outgoing.store');
 
+        // Notifikasi Stok Kritis
+        Route::get('/stock/notifications', [StockController::class, 'notifications'])->name('stock.notifications');
+        Route::put('/stock/notifications/{notification}/read', [StockController::class, 'markAsRead'])->name('stock.notifications.read');
+        Route::post('/stock/notifications/read-all', [StockController::class, 'readAllNotifications'])->name('stock.notifications.read-all');
+
         // Laporan mingguan mutasi barang jadi
         Route::get('/stock/weekly-report', [StockController::class, 'weeklyReport'])->name('stock.weekly-report');
         Route::get('/stock/report/excel', [StockController::class, 'exportStockReportExcel'])->name('stock.report.excel');
         Route::get('/stock/report/pdf', [StockController::class, 'exportStockReportPdf'])->name('stock.report.pdf');
-
     });
 
     // 5. Laporan HR/Keuangan
     Route::get('/reports', [ReportController::class, 'index'])
         ->middleware(['role:hr'])
         ->name('reports.index');
+    Route::get('/reports/stock/excel', [ReportController::class, 'exportStockExcel'])
+        ->middleware(['role:hr,warehouse'])
+        ->name('reports.stock.excel');
 
     // Profile standard breeze routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

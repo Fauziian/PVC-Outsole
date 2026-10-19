@@ -98,7 +98,7 @@ class StockService
         if ($barang->stok_saat_ini <= $barang->stok_minimum) {
             // Cek apakah hari ini sudah ada notifikasi yang serupa untuk menghindari duplikasi
             $existingNotif = NotifikasiStok::where('id_barang', $barang->id)
-                ->where('tanggal', now()->toDateString())
+                ->whereDate('tanggal', now()->toDateString())
                 ->where('is_read', false)
                 ->first();
 

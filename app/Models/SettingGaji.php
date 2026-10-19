@@ -54,6 +54,17 @@ class SettingGaji extends Model
      */
     public static function aktif(): self
     {
-        return static::where('is_active', true)->firstOrFail();
+        return static::where('is_active', true)->first() ?? static::firstOrCreate([
+            'is_active' => true,
+        ], [
+            'gaji_pokok_kategori_a'  => 0,
+            'gaji_pokok_kategori_b'  => 0,
+            'tarif_per_jam_kategori_a' => 12000,
+            'tarif_per_jam_kategori_b' => 17000,
+            'insentif_jam_lebih_pct' => 0,
+            'insentif_lembur_pct'    => 0,
+            'potongan_setengah_pct'  => 0,
+            'keterangan'             => 'Pengaturan default sistem',
+        ]);
     }
 }

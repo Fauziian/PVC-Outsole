@@ -94,7 +94,7 @@ export default function Dashboard({
             <CardStat label="Varian Produk" value={stats.total_jenis_barang} icon={Package} color="bg-blue-500" />
             <CardStat label="Stok Level Aman" value={stats.stok_aman} icon={UserCheck} color="bg-emerald-500" />
             <CardStat label="Stok Level Menipis" value={stats.stok_menipis} icon={AlertTriangle} color="bg-amber-500" />
-            <CardStat label="Stok Kosong" value={stats.stok_kritis} icon={AlertTriangle} color="bg-rose-500" />
+            <CardStat label="Stok Kritis (≤ Min)" value={stats.stok_kritis} icon={AlertTriangle} color="bg-rose-500" />
           </>
         )}
 
@@ -190,13 +190,15 @@ export default function Dashboard({
                       {dashboardStock.length === 0 ? (
                         <tr><td colSpan={4} className="py-4 text-center text-slate-400">Belum ada data stok.</td></tr>
                       ) : dashboardStock.map((barang) => {
-                        const aman = barang.stok_saat_ini > barang.stok_minimum;
+                        const isKritis = barang.stok_saat_ini <= barang.stok_minimum;
+                        const isMenipis = barang.stok_saat_ini <= (barang.stok_minimum * 1.3);
                         const label = barang.jenis || barang.kategori;
+                        const statusColor = isKritis ? "text-rose-600 font-bold" : isMenipis ? "text-amber-600 font-semibold" : "text-emerald-600 font-semibold";
                         return <tr key={barang.id} className="hover:bg-slate-50/50">
                           <td className="py-2.5 text-slate-500">{barang.kategori}</td>
                           <td className="py-2.5 font-semibold text-slate-800">{label}</td>
                           <td className="py-2.5 text-slate-600">{barang.warna || "—"}</td>
-                          <td className={`py-2.5 text-right font-bold ${aman ? "text-green-600" : "text-red-500"}`}>{barang.stok_saat_ini} {barang.satuan}</td>
+                          <td className={`py-2.5 text-right ${statusColor}`}>{barang.stok_saat_ini} {barang.satuan}</td>
                         </tr>;
                       })}
                     </tbody>

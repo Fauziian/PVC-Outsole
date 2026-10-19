@@ -77,7 +77,7 @@ export default function Index({ karyawan, filters, availableUsers, readOnly = fa
     setData({
       nama: emp.nama,
       jabatan: emp.jabatan,
-      tanggal_masuk: emp.tanggal_masuk,
+      tanggal_masuk: emp.tanggal_masuk ? emp.tanggal_masuk.slice(0, 10) : "",
       kategori_masa_kerja: emp.kategori_masa_kerja,
       is_active: emp.is_active,
       id_pengguna: emp.id_pengguna || "",
@@ -184,7 +184,9 @@ export default function Index({ karyawan, filters, availableUsers, readOnly = fa
                       <p className="font-semibold text-slate-800">{emp.nama}</p>
                     </td>
                     <td className="px-6 py-4 text-slate-600 font-medium">{emp.jabatan}</td>
-                    <td className="px-6 py-4 text-slate-500">{emp.tanggal_masuk}</td>
+                    <td className="px-6 py-4 text-slate-500">
+                      {emp.tanggal_masuk ? new Date(emp.tanggal_masuk.slice(0, 10)).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
                         emp.kategori_masa_kerja === "B" 

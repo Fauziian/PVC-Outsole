@@ -30,7 +30,7 @@ return new class extends Migration
 
             $table->foreignId('id_karyawan')
                   ->constrained('karyawan')
-                  ->cascadeOnDelete();
+                  ->restrictOnDelete();
 
             $table->string('periode');                                             // e.g. "2025-08" (YYYY-MM)
 

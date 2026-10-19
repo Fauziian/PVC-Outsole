@@ -45,6 +45,9 @@ class ReportController extends Controller
     public function exportPayrollExcel(Request $request): StreamedResponse
     {
         $periode = $request->input('periode', now()->format('Y-m'));
+        if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periode)) {
+            $periode = now()->format('Y-m');
+        }
 
         $payroll = KomponenGaji::with('karyawan')
             ->where('periode', $periode)
@@ -74,10 +77,11 @@ class ReportController extends Controller
 
         $rowNum = 5;
         foreach ($payroll as $index => $p) {
+            $kategori = $p->rincian['kategori_masa_kerja'] ?? $p->karyawan->kategori_masa_kerja;
             $sheet->setCellValue('A' . $rowNum, $index + 1);
             $sheet->setCellValue('B' . $rowNum, $p->karyawan->nama);
             $sheet->setCellValue('C' . $rowNum, $p->karyawan->jabatan);
-            $sheet->setCellValue('D' . $rowNum, $p->karyawan->kategori_masa_kerja === 'B' ? '>= 5 Tahun' : '< 5 Tahun');
+            $sheet->setCellValue('D' . $rowNum, $kategori === 'B' ? '>= 5 Tahun' : '< 5 Tahun');
             $sheet->setCellValue('E' . $rowNum, $p->tarif_per_jam);
             $sheet->setCellValue('F' . $rowNum, $p->total_jam_normal);
             $sheet->setCellValue('G' . $rowNum, $p->gaji_pokok);
@@ -112,20 +116,37 @@ class ReportController extends Controller
     public function exportStockExcel(Request $request): StreamedResponse
     {
         $bulan = $request->input('bulan', now()->format('Y-m'));
+        if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $bulan)) {
+            $bulan = now()->format('Y-m');
+        }
+
         $barangs = BarangPvc::all();
+
+        // Optimasi: Agregasi mutasi tanpa query berulang (N+1)
+        $incomingTotals = BarangMasuk::whereYear('tanggal', substr($bulan, 0, 4))
+            ->whereMonth('tanggal', substr($bulan, 5, 2))
+            ->groupBy('id_barang')
+            ->selectRaw('id_barang, SUM(jumlah) as total')
+            ->pluck('total', 'id_barang');
+
+        $outgoingTotals = BarangKeluar::whereYear('tanggal', substr($bulan, 0, 4))
+            ->whereMonth('tanggal', substr($bulan, 5, 2))
+            ->groupBy('id_barang')
+            ->selectRaw('id_barang, SUM(jumlah) as total')
+            ->pluck('total', 'id_barang');
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Laporan Stok');
 
-        $sheet->setCellValue('A1', 'LAPORAN MUTASI STOK BAHAN BAKU SUMBER PVC OUTSOLE TALI JEPIT');
+        $sheet->setCellValue('A1', 'LAPORAN MUTASI STOK PRODUK JADI SUMBER PVC OUTSOLE & TALI JEPIT');
         $sheet->setCellValue('A2', 'BULAN: ' . $bulan);
         $sheet->mergeCells('A1:G1');
         $sheet->mergeCells('A2:G2');
 
         $sheet->setCellValue('A4', 'No');
         $sheet->setCellValue('B4', 'Kode Barang');
-        $sheet->setCellValue('C4', 'Nama Bahan Baku');
+        $sheet->setCellValue('C4', 'Nama Produk');
         $sheet->setCellValue('D4', 'Stok Minimum');
         $sheet->setCellValue('E4', 'Total Masuk');
         $sheet->setCellValue('F4', 'Total Keluar');
@@ -133,16 +154,8 @@ class ReportController extends Controller
 
         $rowNum = 5;
         foreach ($barangs as $index => $b) {
-            // Hitung mutasi masuk / keluar untuk bulan terkait
-            $totalMasuk = BarangMasuk::where('id_barang', $b->id)
-                ->whereYear('tanggal', substr($bulan, 0, 4))
-                ->whereMonth('tanggal', substr($bulan, 5, 2))
-                ->sum('jumlah');
-
-            $totalKeluar = BarangKeluar::where('id_barang', $b->id)
-                ->whereYear('tanggal', substr($bulan, 0, 4))
-                ->whereMonth('tanggal', substr($bulan, 5, 2))
-                ->sum('jumlah');
+            $totalMasuk = (int) ($incomingTotals[$b->id] ?? 0);
+            $totalKeluar = (int) ($outgoingTotals[$b->id] ?? 0);
 
             $sheet->setCellValue('A' . $rowNum, $index + 1);
             $sheet->setCellValue('B' . $rowNum, $b->kode_barang);
@@ -171,7 +184,17 @@ class ReportController extends Controller
     public function downloadAttendancePdf(Request $request)
     {
         $bulan = $request->input('bulan', now()->format('Y-m'));
-        $karyawans = Karyawan::where('is_active', true)->get();
+        if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $bulan)) {
+            $bulan = now()->format('Y-m');
+        }
+
+        // Ambil karyawan aktif atau yang memiliki absensi di bulan ini (S-06)
+        $karyawans = Karyawan::where('is_active', true)
+            ->orWhereHas('absensi', function ($q) use ($bulan) {
+                $q->whereYear('tanggal', substr($bulan, 0, 4))
+                  ->whereMonth('tanggal', substr($bulan, 5, 2));
+            })
+            ->get();
 
         $rekap = [];
         foreach ($karyawans as $emp) {
@@ -195,6 +218,7 @@ class ReportController extends Controller
             'rekap' => $rekap,
             'bulan' => Carbon::parse($bulan . '-01')->isoFormat('MMMM Y'),
             'tanggal_cetak' => now()->isoFormat('D MMMM Y'),
+            'dibuat_oleh' => auth()->user()->nama ?? 'Staff HRD',
         ]);
 
         return $pdf->download("Laporan-Kehadiran-{$bulan}.pdf");

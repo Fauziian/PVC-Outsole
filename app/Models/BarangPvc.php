@@ -41,18 +41,24 @@ class BarangPvc extends Model
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+    public const THRESHOLD_MENIPIS_MULTIPLIER = 1.3;
+
     /**
-     * Dapatkan status stok: 'aman', 'menipis', atau 'kosong'.
-     * - kosong   : stok_saat_ini = 0
-     * - menipis  : stok tersisa, tetapi <= stok_minimum * 1.3
-     * - aman    : di atas threshold menipis
+     * Dapatkan status stok: 'kosong', 'kritis', 'menipis', atau 'aman'.
+     * - kosong  : stok_saat_ini = 0
+     * - kritis  : stok_saat_ini <= stok_minimum
+     * - menipis : stok_saat_ini > stok_minimum && stok_saat_ini <= (stok_minimum * 1.3)
+     * - aman    : stok_saat_ini > (stok_minimum * 1.3)
      */
     public function getStatusStokAttribute(): string
     {
         if ($this->stok_saat_ini === 0) {
             return 'kosong';
         }
-        if ($this->stok_saat_ini <= ($this->stok_minimum * 1.3)) {
+        if ($this->stok_saat_ini <= $this->stok_minimum) {
+            return 'kritis';
+        }
+        if ($this->stok_saat_ini <= ($this->stok_minimum * self::THRESHOLD_MENIPIS_MULTIPLIER)) {
             return 'menipis';
         }
         return 'aman';

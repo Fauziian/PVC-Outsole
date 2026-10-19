@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PayrollController extends Controller
@@ -35,6 +36,9 @@ class PayrollController extends Controller
             ->toArray();
 
         $selectedPeriode = $request->input('periode', !empty($periodes) ? $periodes[0] : now()->format('Y-m'));
+        if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $selectedPeriode)) {
+            $selectedPeriode = !empty($periodes) ? $periodes[0] : now()->format('Y-m');
+        }
 
         // Query komponen gaji pada periode terpilih
         $payrollList = KomponenGaji::with('karyawan')
@@ -44,11 +48,16 @@ class PayrollController extends Controller
         $totalGajiClean = $payrollList->sum('total_gaji');
         $totalInsentif = $payrollList->sum('insentif_lembur');
         $totalPotongan = $payrollList->sum('potongan');
+        $setting = SettingGaji::aktif();
 
         return Inertia::render('Payroll/Index', [
             'periodes' => $periodes,
             'selected_periode' => $selectedPeriode,
             'payroll_list' => $payrollList,
+            'setting' => [
+                'tarif_kategori_a' => $setting->tarif_per_jam_kategori_a,
+                'tarif_kategori_b' => $setting->tarif_per_jam_kategori_b,
+            ],
             'stats' => [
                 'total_bersih' => $totalGajiClean,
                 'total_insentif' => $totalInsentif,
@@ -64,24 +73,49 @@ class PayrollController extends Controller
     public function calculatePeriod(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'periode' => ['required', 'regex:/^\d{4}-\d{2}$/'], // format YYYY-MM
+            'periode' => ['required', 'date_format:Y-m'],
         ]);
 
         $periode = $validated['periode'];
+        $start = Carbon::createFromFormat('Y-m', $periode)->startOfMonth();
+        $end = Carbon::createFromFormat('Y-m', $periode)->endOfMonth();
 
-        // Ambil semua karyawan aktif
-        $karyawans = Karyawan::where('is_active', true)->get();
+        // Ambil semua karyawan aktif atau yang memiliki absensi pada periode ini (S-06)
+        $karyawans = Karyawan::where('is_active', true)
+            ->orWhereHas('absensi', function ($q) use ($start, $end) {
+                $q->whereDate('tanggal', '>=', $start->toDateString())
+                  ->whereDate('tanggal', '<=', $end->toDateString());
+            })
+            ->get();
 
         if ($karyawans->isEmpty()) {
-            return redirect()->back()->with('error', 'Tidak ada karyawan aktif yang terdaftar.');
+            return redirect()->back()->with('error', 'Tidak ada karyawan aktif atau tercatat hadir pada periode tersebut.');
         }
 
+        $generated = 0;
+        $skipped = 0;
         foreach ($karyawans as $emp) {
+            $existing = KomponenGaji::where('id_karyawan', $emp->id)->where('periode', $periode)->first();
+            if ($existing && $existing->status === 'final') {
+                $skipped++;
+                continue;
+            }
             $this->payrollService->generate($emp, $periode);
+            $generated++;
+        }
+
+        if ($generated === 0 && $skipped > 0) {
+            return redirect()->route('payroll.index', ['periode' => $periode])
+                ->with('error', "Seluruh slip gaji periode {$periode} sudah difinalisasi dan tidak dapat digenerate ulang.");
+        }
+
+        $msg = "Proses penggajian periode {$periode} berhasil: {$generated} slip digenerate.";
+        if ($skipped > 0) {
+            $msg .= " ({$skipped} slip berstatus FINAL dilewati dan tidak diubah).";
         }
 
         return redirect()->route('payroll.index', ['periode' => $periode])
-            ->with('success', "Proses penggajian periode {$periode} berhasil digenerate.");
+            ->with('success', $msg);
     }
 
     /**
@@ -90,11 +124,9 @@ class PayrollController extends Controller
     public function show(KomponenGaji $payroll): Response
     {
         $payroll->load('karyawan');
-        $setting = SettingGaji::aktif();
 
         return Inertia::render('Payroll/Show', [
             'payroll' => $payroll,
-            'setting' => $setting,
         ]);
     }
 
@@ -103,6 +135,10 @@ class PayrollController extends Controller
      */
     public function finalize(KomponenGaji $payroll): RedirectResponse
     {
+        if ($payroll->status === 'final') {
+            return redirect()->back()->with('error', 'Status slip gaji sudah FINAL.');
+        }
+
         $payroll->update(['status' => 'final']);
 
         return redirect()->back()->with('success', 'Status slip gaji berhasil diselesaikan (Final).');
@@ -120,6 +156,7 @@ class PayrollController extends Controller
             'payroll' => $payroll,
             'setting' => $setting,
             'tanggal_cetak' => now()->isoFormat('D MMMM Y'),
+            'petugas' => auth()->user()->nama ?? 'Staff HRD',
         ]);
 
         // Kustomisasi layout slip kertas kecil landscape

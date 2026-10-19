@@ -276,10 +276,21 @@ class DatabaseSeeder extends Seeder
 
         $barangs = [];
         foreach ($barangData as $b) {
-            $barangs[$b['kode_barang']] = BarangPvc::updateOrCreate(
+            $barang = BarangPvc::updateOrCreate(
                 ['kode_barang' => $b['kode_barang']],
                 $b
             );
+            $barangs[$b['kode_barang']] = $barang;
+
+            // Catat stok awal sebagai barang masuk agar mutasi sesuai stok fisik (T-08, R-03)
+            if ($barang->stok_saat_ini > 0) {
+                BarangMasuk::create([
+                    'id_barang' => $barang->id,
+                    'tanggal' => Carbon::now()->subDays(10)->toDateString(),
+                    'jumlah' => $barang->stok_saat_ini,
+                    'keterangan' => 'Stok awal sistem',
+                ]);
+            }
         }
 
         // 6. Contoh hasil cetak yang masuk ke gudang.
@@ -292,10 +303,12 @@ class DatabaseSeeder extends Seeder
         foreach ($incomingData as $in) {
             $kb = $in['kode_barang'];
             unset($in['kode_barang']);
-            $in['id_barang'] = $barangs[$kb]->id;
+            $barang = $barangs[$kb];
+            $in['id_barang'] = $barang->id;
             $in['tanggal'] = Carbon::now()->toDateString();
             $in['keterangan'] = 'Hasil cetak harian';
             BarangMasuk::create($in);
+            $barang->increment('stok_saat_ini', $in['jumlah']);
         }
 
         // 7. Contoh pengiriman barang jadi kepada pelanggan.
@@ -307,13 +320,12 @@ class DatabaseSeeder extends Seeder
         foreach ($outgoingData as $out) {
             $kb = $out['kode_barang'];
             unset($out['kode_barang']);
-            $out['id_barang'] = $barangs[$kb]->id;
+            $barang = $barangs[$kb];
+            $out['id_barang'] = $barang->id;
             $out['tanggal'] = Carbon::now()->subDay()->toDateString();
             $out['keterangan'] = 'Pengiriman barang jadi';
             BarangKeluar::create($out);
+            $barang->decrement('stok_saat_ini', $out['jumlah']);
         }
-
-        // 8. Ganti data karyawan proposal dengan data contoh operasional pabrik.
-        $this->call(DemoWorkforceSeeder::class);
     }
 }

@@ -47,13 +47,21 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
 
-            // Jumlah notifikasi stok yang belum dibaca (untuk badge di topbar)
-            'notifikasi_stok_count' => fn () => $user
-                ? NotifikasiStok::where('is_read', false)->count()
-                : 0,
-            'unread_notifications_count' => fn () => $user
-                ? NotifikasiStok::where('is_read', false)->count()
-                : 0,
+            // Jumlah notifikasi stok yang belum dibaca (untuk badge di topbar dan sidebar)
+            'unread_notifications_count' => function () use ($user) {
+                static $count = null;
+                if ($count === null) {
+                    $count = $user ? NotifikasiStok::where('is_read', false)->count() : 0;
+                }
+                return $count;
+            },
+            'notifikasi_stok_count' => function () use ($user) {
+                static $count = null;
+                if ($count === null) {
+                    $count = $user ? NotifikasiStok::where('is_read', false)->count() : 0;
+                }
+                return $count;
+            },
 
             // Flash messages untuk toast notification
             'flash' => [

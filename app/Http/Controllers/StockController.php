@@ -131,7 +131,18 @@ class StockController extends Controller
         $validated['nama_barang'] = $this->productName($validated);
         $validated['keterangan'] = null;
         $validated['satuan'] = 'kodi';
-        BarangPvc::create($validated);
+        $item = BarangPvc::create($validated);
+
+        if ($item->stok_saat_ini > 0) {
+            BarangMasuk::create([
+                'id_barang' => $item->id,
+                'tanggal' => now()->toDateString(),
+                'jumlah' => $item->stok_saat_ini,
+                'keterangan' => 'Stok awal sistem',
+            ]);
+        }
+
+        $this->stockService->checkAndNotifyStock($item);
 
         return redirect()->back()->with('success', 'Produk jadi berhasil didaftarkan.');
     }
@@ -155,6 +166,8 @@ class StockController extends Controller
         $validated['nama_barang'] = $this->productName($validated);
         $validated['keterangan'] = null;
         $item->update($validated);
+
+        $this->stockService->checkAndNotifyStock($item);
 
         return redirect()->back()->with('success', 'Data produk berhasil diperbarui.');
     }
@@ -239,9 +252,12 @@ class StockController extends Controller
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1'],
             'items.*.id_barang' => ['required', 'distinct', 'exists:barang_pvc,id'],
-            'items.*.tanggal' => ['required', 'date'],
+            'items.*.tanggal' => ['required', 'date', 'before_or_equal:today'],
             'items.*.jumlah' => ['required', 'integer', 'min:1'],
             'items.*.keterangan' => ['nullable', 'string', 'max:500'],
+        ], [
+            'items.*.id_barang.distinct' => 'Produk tidak boleh dipilih lebih dari satu kali dalam satu transaksi.',
+            'items.*.tanggal.before_or_equal' => 'Tanggal transaksi tidak boleh melebihi hari ini.',
         ]);
 
         $this->stockService->recordIncomingBatch($validated['items']);
@@ -257,10 +273,12 @@ class StockController extends Controller
         $query = BarangKeluar::with('barangPvc');
 
         if ($search = $request->input('search')) {
-            $query->whereHas('barangPvc', function($q) use ($search) {
-                $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('kode_barang', 'like', "%{$search}%");
-            })->orWhere('tujuan_penggunaan', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->whereHas('barangPvc', function($sub) use ($search) {
+                    $sub->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('kode_barang', 'like', "%{$search}%");
+                })->orWhere('tujuan_penggunaan', 'like', "%{$search}%");
+            });
         }
 
         $transactions = $query->orderBy('tanggal', 'desc')
@@ -287,9 +305,12 @@ class StockController extends Controller
             'pelanggan' => ['required', 'string', 'max:255'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.id_barang' => ['required', 'distinct', 'exists:barang_pvc,id'],
-            'items.*.tanggal' => ['required', 'date'],
+            'items.*.tanggal' => ['required', 'date', 'before_or_equal:today'],
             'items.*.jumlah' => ['required', 'integer', 'min:1'],
             'items.*.keterangan' => ['nullable', 'string', 'max:500'],
+        ], [
+            'items.*.id_barang.distinct' => 'Produk tidak boleh dipilih lebih dari satu kali dalam satu transaksi.',
+            'items.*.tanggal.before_or_equal' => 'Tanggal pengiriman tidak boleh melebihi hari ini.',
         ]);
 
         try {
@@ -298,8 +319,10 @@ class StockController extends Controller
                 'tujuan_penggunaan' => $validated['pelanggan'],
             ], $validated['items']);
             $this->stockService->recordOutgoingBatch($items);
-        } catch (Exception $e) {
+        } catch (\InvalidArgumentException $e) {
             return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memproses pengiriman produk. Silakan periksa kembali data stok.');
         }
 
         return redirect()->back()->with('success', count($validated['items']).' produk berhasil dikirim ke pelanggan.');
@@ -372,13 +395,15 @@ class StockController extends Controller
         $end = $type === 'monthly' ? $date->copy()->endOfMonth() : $date->copy()->endOfWeek(Carbon::SUNDAY);
 
         $incoming = BarangMasuk::query()
-            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->whereDate('tanggal', '>=', $start->toDateString())
+            ->whereDate('tanggal', '<=', $end->toDateString())
             ->selectRaw('id_barang, SUM(jumlah) as total')
             ->groupBy('id_barang')
             ->pluck('total', 'id_barang');
 
         $outgoing = BarangKeluar::query()
-            ->whereBetween('tanggal', [$start->toDateString(), $end->toDateString()])
+            ->whereDate('tanggal', '>=', $start->toDateString())
+            ->whereDate('tanggal', '<=', $end->toDateString())
             ->selectRaw('id_barang, SUM(jumlah) as total')
             ->groupBy('id_barang')
             ->pluck('total', 'id_barang');

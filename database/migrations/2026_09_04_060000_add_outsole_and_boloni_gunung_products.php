@@ -34,10 +34,15 @@ return new class extends Migration
         }
 
         foreach ($products as $product) {
-            DB::table('barang_pvc')->updateOrInsert(
-                ['kode_barang' => $product['kode_barang']],
-                [...$product, 'created_at' => $now, 'updated_at' => $now],
-            );
+            $existing = DB::table('barang_pvc')->where('kode_barang', $product['kode_barang'])->first();
+            if (!$existing) {
+                DB::table('barang_pvc')->insert([
+                    ...$product,
+                    'stok_saat_ini' => 0,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
         }
     }
 

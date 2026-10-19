@@ -25,6 +25,10 @@ interface IndexProps {
   periodes: string[];
   selected_periode: string;
   payroll_list: PayrollSlip[];
+  setting?: {
+    tarif_kategori_a: number;
+    tarif_kategori_b: number;
+  };
   stats: {
     total_bersih: number;
     total_insentif: number;
@@ -33,11 +37,10 @@ interface IndexProps {
   };
 }
 
-export default function Index({ periodes, selected_periode, payroll_list, stats }: IndexProps) {
+export default function Index({ periodes, selected_periode, payroll_list, setting, stats }: IndexProps) {
   const [periode, setPeriode] = useState(selected_periode);
-  const [loading, setLoading] = useState(false);
 
-  const { data, setData, post, processing } = useForm({
+  const { data, setData, processing } = useForm({
     periode: selected_periode,
   });
 
@@ -52,16 +55,15 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
 
   const handlePeriodChange = (val: string) => {
     setPeriode(val);
+    setData("periode", val);
     router.get(route("payroll.index"), { periode: val }, { preserveState: true });
   };
 
   const handleGeneratePayroll = (e: React.FormEvent) => {
     e.preventDefault();
     if (confirm(`Apakah Anda yakin ingin memproses dan mengkalkulasi ulang gaji seluruh karyawan untuk periode ${periode}?`)) {
-      post(route("payroll.calculate"), {
-        onSuccess: () => {
-          setLoading(false);
-        }
+      router.post(route("payroll.calculate"), { periode }, {
+        preserveScroll: true,
       });
     }
   };
@@ -106,7 +108,12 @@ export default function Index({ periodes, selected_periode, payroll_list, stats 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <RecapCard label="Total Gaji Dibuat" value={idr(stats.total_bersih)} detail="Akumulasi upah jam normal dan lembur" color="text-blue-600 bg-blue-50" />
         <RecapCard label="Total Upah Lembur" value={idr(stats.total_insentif)} detail="Durasi kerja 14–15 jam" color="text-indigo-600 bg-indigo-50" />
-        <RecapCard label="Tarif Pabrik" value="Rp12rb / Rp17rb" detail="Berdasarkan masa kerja karyawan" color="text-amber-600 bg-amber-50" />
+        <RecapCard
+          label="Tarif Pabrik"
+          value={setting ? `Rp${Math.round(setting.tarif_kategori_a / 1000)}rb / Rp${Math.round(setting.tarif_kategori_b / 1000)}rb` : "Rp12rb / Rp17rb"}
+          detail="Berdasarkan masa kerja karyawan"
+          color="text-amber-600 bg-amber-50"
+        />
         <RecapCard label="Jumlah Slip Digenerate" value={`${stats.count} Slip`} detail={`Untuk periode aktif: ${periode}`} color="text-purple-600 bg-purple-50" />
       </div>
 

@@ -8,7 +8,10 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -58,7 +61,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'unique:users,username', 'max:50', 'alpha_dash'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', Password::defaults()],
             'role' => ['required', 'in:admin,hr,warehouse'],
             'is_active' => ['required', 'boolean'],
         ]);
@@ -101,6 +104,11 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        // Putus sesi yang sedang aktif jika akun dinonaktifkan (T-03)
+        if (!$user->is_active && Schema::hasTable('sessions')) {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        }
+
         return redirect()->route('users.index')
             ->with('success', 'Akun Pengguna berhasil diperbarui.');
     }
@@ -111,7 +119,7 @@ class UserController extends Controller
     public function resetPassword(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', Password::defaults()],
         ]);
 
         $user->update([

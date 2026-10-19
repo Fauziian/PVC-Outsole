@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->foreignId('id_karyawan')
                   ->constrained('karyawan')
-                  ->cascadeOnDelete();
+                  ->restrictOnDelete();
 
             $table->date('tanggal');                                               // tanggal kehadiran
             $table->time('jam_masuk');                                             // jam masuk kerja

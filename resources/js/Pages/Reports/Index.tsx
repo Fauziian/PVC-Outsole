@@ -9,12 +9,14 @@ interface ReportsProps {
 }
 
 export default function Index({ periodes, role }: ReportsProps) {
-  const [selectedBulan, setSelectedBulan] = useState(() => {
-    return new Date().toISOString().split("T")[0].substring(0, 7); // "YYYY-MM"
-  });
+  const getLocalMonth = () => {
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 7);
+  };
 
+  const [selectedBulan, setSelectedBulan] = useState(getLocalMonth);
   const [selectedPeriodePayroll, setSelectedPeriodePayroll] = useState(() => {
-    return periodes[0] || new Date().toISOString().split("T")[0].substring(0, 7);
+    return periodes[0] || getLocalMonth();
   });
 
   return (
@@ -39,7 +41,7 @@ export default function Index({ periodes, role }: ReportsProps) {
               <div>
                 <h3 className="text-sm font-bold text-slate-800">Laporan Kehadiran Karyawan</h3>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Unduh ringkasan kehadiran harian (Jumlah Hadir Penuh, Jam Lebih, Lembur, Potongan Setengah Hari) seluruh karyawan aktif.
+                  Unduh ringkasan kehadiran bulanan (Jumlah Hadir Penuh, Lembur, dan Hadir Setengah Hari) karyawan.
                 </p>
               </div>
             </div>
@@ -79,7 +81,7 @@ export default function Index({ periodes, role }: ReportsProps) {
               <div>
                 <h3 className="text-sm font-bold text-slate-800">Laporan Rekapitulasi Gaji</h3>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Ekspor data komparasi gaji pokok, tunjangan jabatan, insentif lembur, potongan kehadiran setengah hari, dan gaji bersih terbayar.
+                  Ekspor data rekapitulasi gaji bulanan berdasarkan jam kerja normal, upah lembur, dan total gaji bersih karyawan.
                 </p>
               </div>
             </div>
@@ -109,7 +111,7 @@ export default function Index({ periodes, role }: ReportsProps) {
           </div>
         )}
 
-        {/* MODUL GUDANG: MUTASI STOK BAHAN PVC (EXCEL) */}
+        {/* MODUL GUDANG: MUTASI STOK PRODUK JADI PVC (EXCEL) */}
         {(role === "warehouse" || role === "admin") && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between space-y-6">
             <div className="space-y-3">
@@ -119,7 +121,7 @@ export default function Index({ periodes, role }: ReportsProps) {
               <div>
                 <h3 className="text-sm font-bold text-slate-800">Laporan Mutasi Stok Gudang</h3>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Ekspor ringkasan kartu stok fisik (stok awal, kuantitas penerimaan masuk, kuantitas pemakaian produksi, stok akhir) bahan baku PVC.
+                  Ekspor ringkasan mutasi produk jadi PVC Outsole & Tali Jepit (kuantitas masuk hasil cetak, kuantitas pengiriman keluar, dan sisa stok).
                 </p>
               </div>
             </div>

@@ -19,10 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Daftarkan alias middleware 'role' untuk RBAC
-        // Penggunaan: Route::middleware(['auth', 'role:admin,hr'])->group(...)
+        // Daftarkan alias middleware 'role' untuk RBAC dan 'active' untuk user aktif
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

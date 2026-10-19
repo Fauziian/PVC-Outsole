@@ -20,18 +20,21 @@ class PayrollCalculationService
     public function calculate(Karyawan $karyawan, string $periode): array
     {
         $setting = SettingGaji::aktif();
-        $kategoriMasaKerja = $karyawan->kategori_otomatis;
+        $kategoriMasaKerja = $karyawan->kategori_masa_kerja ?: $karyawan->kategori_otomatis;
         $tarifPerJam = $kategoriMasaKerja === 'B'
             ? $setting->tarif_per_jam_kategori_b
             : $setting->tarif_per_jam_kategori_a;
 
+        $start = \Carbon\Carbon::createFromFormat('Y-m', $periode)->startOfMonth()->toDateString();
+        $end = \Carbon\Carbon::createFromFormat('Y-m', $periode)->endOfMonth()->toDateString();
+
         $absensiList = Absensi::where('id_karyawan', $karyawan->id)
-            ->whereYear('tanggal', substr($periode, 0, 4))
-            ->whereMonth('tanggal', substr($periode, 5, 2))
+            ->whereDate('tanggal', '>=', $start)
+            ->whereDate('tanggal', '<=', $end)
             ->orderBy('tanggal')
             ->get();
 
-        $absensiSelesai = $absensiList->filter(fn (Absensi $absensi) => $absensi->sudah_pulang);
+        $absensiSelesai = $absensiList->filter(fn (Absensi $absensi) => (bool)$absensi->sudah_pulang);
 
         $totalJamNormal = 0.0;
         $totalJamLembur = 0.0;
@@ -39,14 +42,23 @@ class PayrollCalculationService
 
         foreach ($absensiSelesai as $absensi) {
             $durasi = (float) $absensi->durasi_jam;
-            // Catatan lama belum memiliki pemisahan jam; tetap dapat dihitung.
-            $jamNormal = $absensi->jam_normal === null ? min($durasi, 13) : (float) $absensi->jam_normal;
-            $jamLembur = $absensi->jam_lembur === null ? max($durasi - 13, 0) : (float) $absensi->jam_lembur;
+            // Catatan yang belum memiliki pemisahan jam tetap dihitung dari durasi_jam
+            if ((float)$absensi->jam_normal == 0 && (float)$absensi->jam_lembur == 0 && $durasi > 0) {
+                $jamNormal = min($durasi, 13);
+                $jamLembur = max($durasi - 13, 0);
+            } else {
+                $jamNormal = (float) $absensi->jam_normal;
+                $jamLembur = (float) $absensi->jam_lembur;
+            }
 
             $totalJamNormal += $jamNormal;
             $totalJamLembur += $jamLembur;
+            $tglStr = $absensi->tanggal instanceof \Carbon\CarbonInterface
+                ? $absensi->tanggal->format('Y-m-d')
+                : substr((string)$absensi->tanggal, 0, 10);
+
             $rincianAbsensi[] = [
-                'tanggal' => $absensi->tanggal->format('Y-m-d'),
+                'tanggal' => $tglStr,
                 'shift' => $absensi->shift ?? '-',
                 'jam_masuk' => substr($absensi->jam_masuk, 0, 5),
                 'jam_keluar' => substr($absensi->jam_keluar, 0, 5),
@@ -85,6 +97,15 @@ class PayrollCalculationService
     public function generate(Karyawan $karyawan, string $periode): KomponenGaji
     {
         return DB::transaction(function () use ($karyawan, $periode) {
+            $existing = KomponenGaji::where('id_karyawan', $karyawan->id)
+                ->where('periode', $periode)
+                ->first();
+
+            // K-02: Jangan timpa slip yang sudah berstatus 'final'
+            if ($existing && $existing->status === 'final') {
+                return $existing;
+            }
+
             $data = $this->calculate($karyawan, $periode);
 
             return KomponenGaji::updateOrCreate(

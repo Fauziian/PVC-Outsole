@@ -38,6 +38,7 @@ const navByRole: Record<Role, NavItem[]> = {
     { id: "available", label: "Stok Barang Tersedia", icon: Package, route: "stock.available" },
     { id: "incoming", label: "Barang Masuk", icon: Package, route: "stock.incoming" },
     { id: "outgoing", label: "Barang Keluar", icon: Package, route: "stock.outgoing" },
+    { id: "notifications", label: "Notifikasi Kritis", icon: Bell, route: "stock.notifications" },
     { id: "weekly-report", label: "Laporan Mingguan/Bulanan", icon: BarChart2, route: "stock.weekly-report" },
   ],
 };

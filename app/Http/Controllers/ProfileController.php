@@ -31,13 +31,9 @@ class ProfileController extends Controller
     {
         $request->user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
         $request->user()->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
@@ -45,11 +41,20 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        // T-02: Larang penghapusan akun Administrator melalui profil
+        if ($user->isAdmin()) {
+            return Redirect::back()->with('error', 'Akun Administrator tidak dapat dihapus melalui menu profil.');
+        }
+
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
+        if ($user->karyawan()->exists()) {
+            $user->karyawan()->update(['id_pengguna' => null]);
+        }
 
         Auth::logout();
 
@@ -58,6 +63,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return Redirect::to('/login');
     }
 }

@@ -35,29 +35,24 @@ foreach ([
     $_SERVER[$key] = $value;
 }
 
-// If using SQLite, copy the database to /tmp to make it writable
-$dbConnection = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? ($_SERVER['DB_CONNECTION'] ?? 'sqlite'));
+// If using SQLite file on serverless, ensure writable database copy in /tmp
+$dbConnection = getenv('DB_CONNECTION') ?: ($_ENV['DB_CONNECTION'] ?? ($_SERVER['DB_CONNECTION'] ?? 'mysql'));
 if ($dbConnection === 'sqlite') {
     $srcPath = __DIR__ . '/../database/database.sqlite';
-    $sourceVersion = file_exists($srcPath) ? sha1_file($srcPath) : null;
-    $dbPath = '/tmp/database-' . ($sourceVersion ?: 'default') . '.sqlite';
+    $customDb = getenv('DB_DATABASE') ?: ($_ENV['DB_DATABASE'] ?? null);
+    if (!$customDb || $customDb === 'database/database.sqlite' || str_ends_with($customDb, 'database.sqlite')) {
+        $sourceVersion = file_exists($srcPath) ? sha1_file($srcPath) : null;
+        $dbPath = '/tmp/database-' . ($sourceVersion ?: 'default') . '.sqlite';
 
-    // Each bundled database version gets its own writable serverless copy.
-    if ($sourceVersion && !file_exists($dbPath)) {
-        copy($srcPath, $dbPath);
-        @chmod($dbPath, 0666);
+        if ($sourceVersion && !file_exists($dbPath)) {
+            copy($srcPath, $dbPath);
+            @chmod($dbPath, 0666);
+        }
+
+        putenv('DB_DATABASE=' . $dbPath);
+        $_ENV['DB_DATABASE'] = $dbPath;
+        $_SERVER['DB_DATABASE'] = $dbPath;
     }
-
-    // Compatibility for the bundled demo database: the former "management"
-    // account is now part of HR/Keuangan. Normal installations receive the
-    // same change through the application migration.
-    if (file_exists($dbPath)) {
-        (new PDO('sqlite:' . $dbPath))->exec("UPDATE users SET role = 'hr' WHERE role = 'management'");
-    }
-
-    putenv('DB_DATABASE=' . $dbPath);
-    $_ENV['DB_DATABASE'] = $dbPath;
-    $_SERVER['DB_DATABASE'] = $dbPath;
 }
 
 

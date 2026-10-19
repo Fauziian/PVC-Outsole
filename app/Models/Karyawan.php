@@ -37,7 +37,7 @@ class Karyawan extends Model
     protected function casts(): array
     {
         return [
-            'tanggal_masuk'      => 'date',
+            'tanggal_masuk'      => 'date:Y-m-d',
             'is_active'          => 'boolean',
         ];
     }

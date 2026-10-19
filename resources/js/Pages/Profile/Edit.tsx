@@ -1,43 +1,42 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SumberPvcLayout from '@/Layouts/SumberPvcLayout';
 import { PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
 export default function Edit({
-    mustVerifyEmail,
     status,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string }>) {
+}: PageProps<{ status?: string }>) {
+    const user = usePage<any>().props.auth.user;
+
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Profile
-                </h2>
-            }
-        >
-            <Head title="Profile" />
+        <SumberPvcLayout>
+            <Head title="Profil Akun" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdateProfileInformationForm
-                            mustVerifyEmail={mustVerifyEmail}
-                            status={status}
-                            className="max-w-xl"
-                        />
-                    </div>
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-xl font-bold text-slate-800">Pengaturan Profil</h1>
+                    <p className="text-xs text-slate-500">Kelola informasi akun dan kata sandi Anda.</p>
+                </div>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdatePasswordForm className="max-w-xl" />
-                    </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-2xl">
+                    <UpdateProfileInformationForm
+                        status={status}
+                        className="max-w-xl"
+                    />
+                </div>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-2xl">
+                    <UpdatePasswordForm className="max-w-xl" />
+                </div>
+
+                {user.role !== 'admin' && (
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-2xl">
                         <DeleteUserForm className="max-w-xl" />
                     </div>
-                </div>
+                )}
             </div>
-        </AuthenticatedLayout>
+        </SumberPvcLayout>
     );
 }

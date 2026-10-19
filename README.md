@@ -1,59 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Informasi Manajemen Pabrik PVC - Sumber PVC
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem Informasi Manajemen Terpadu untuk operasional pabrik sandal PVC (Outsole, Tali Jepit, dan Boloni Gunung). Aplikasi mencakup pengelolaan absensi harian, perhitungan penggajian otomatis berbasis tarif masa kerja, kontrol stok dan mutasi barang jadi gudang, serta pusat rekapitulasi laporan dalam format PDF dan Excel.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠️ Arsitektur & Teknologi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Backend**: Laravel 11 (PHP 8.2+)
+- **Frontend**: React 18, TypeScript, Inertia.js
+- **Styling**: Tailwind CSS, Lucide React Icons
+- **Database**: MySQL (Produksi & Lokal XAMPP) / SQLite (Testing)
+- **Ekspor Dokumen**: DomPDF (Slip Gaji & Laporan Kehadiran), PhpSpreadsheet (Rekap Mutasi & Penggajian)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 👥 Hak Akses & Akun Demo
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Aplikasi memiliki 3 peran (*role*) pengguna dengan batasan hak akses di level middleware:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Role | Username | Password | Deskripsi Tugas |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin` | `password` | Manajemen pengguna, pengaturan tarif pabrik, master produk, ringkasan dashboard eksekutif, dan seluruh laporan. |
+| **HR / Keuangan** | `hr` | `password` | Manajemen data karyawan, pencatatan absensi harian (masuk/pulang/lembur), kalkulasi slip gaji bulanan, dan laporan absensi. |
+| **Gudang (Warehouse)** | `warehouse` | `password` | Pencatatan barang masuk hasil cetak, barang keluar ke pelanggan, pemantauan stok kritis, notifikasi peringatan minimum, dan laporan mutasi. |
 
-## Laravel Sponsors
+> **Catatan Keamanan**: Untuk lingkungan produksi publik, ubah seluruh kata sandi akun bawaan dan set `APP_DEBUG=false`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## ⚙️ Modul & Logika Bisnis Utama
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. Modul Penggajian & Tarif Pabrik
+- **Tarif Berdasarkan Masa Kerja**:
+  - Kategori A (< 5 Tahun): Rp12.000 / jam
+  - Kategori B (≥ 5 Tahun): Rp17.000 / jam
+- **Jam Kerja & Lembur**:
+  - Jam kerja reguler: 8 – 13 jam per hari
+  - Jam ke-14 dan seterusnya dihitung sebagai jam lembur
+- **Proteksi Slip Final**: Slip yang sudah berstatus `FINAL` dikunci dan tidak dapat ditimpa saat proses kalkulasi ulang payroll dijalankan.
 
-## Contributing
+### 2. Modul Kehadiran (Absensi)
+- Pencatatan jam masuk dan jam pulang karyawan aktif dengan validasi tanggal maksimal hari ini.
+- Mendukung durasi kerja fleksibel (termasuk setengah hari < 8 jam).
+- Kunci absensi otomatis untuk periode penggajian yang telah difinalisasi.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Modul Kontrol Stok Gudang
+- Satuan stok produk jadi dicatat dalam **kodi** (1 kodi = 20 pasang).
+- Pengurangan stok menggunakan transaksi aman database (`DB::transaction` + `lockForUpdate`).
+- Notifikasi stok kritis otomatis muncul untuk staf gudang dan admin ketika stok produk menyentuh atau berada di bawah batas minimum.
+- Validasi pencegahan input ganda (*distinct items*) dan validasi tanggal transaksi.
 
-## Code of Conduct
+### 4. Pusat Rekapitulasi Laporan
+- Ekspor slip gaji individu PDF dengan rincian jam kerja dan tanda tangan digital.
+- Ekspor rekap kehadiran bulanan PDF.
+- Ekspor rekapitulasi penggajian bulanan Excel.
+- Ekspor rekap mutasi barang masuk, keluar, dan selisih stok (mingguan/bulanan) Excel & PDF.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🚀 Panduan Instalasi Lokal
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. **Clone & Masuk ke Direktori Proyek**:
+   ```bash
+   cd c:/xampp/htdocs/sumber-pvc
+   ```
 
-## License
+2. **Instal Dependensi**:
+   ```bash
+   composer install
+   npm install
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. **Konfigurasi Environment**:
+   Salin `.env.example` ke `.env` (bila belum ada) dan sesuaikan konfigurasi database MySQL.
+   ```env
+   APP_NAME="Sumber PVC"
+   APP_ENV=local
+   APP_DEBUG=true
+   APP_TIMEZONE=Asia/Jakarta
+   APP_LOCALE=id
+
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=sumber-pvc
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+4. **Migrasi & Seeder Database**:
+   ```bash
+   php artisan key:generate
+   php artisan migrate --seed
+   ```
+
+5. **Build Aset Frontend & Jalankan Server**:
+   ```bash
+   npm run build
+   php artisan serve
+   ```
+   Buka browser di `http://127.0.0.1:8000` atau melalui virtual host XAMPP Anda.
+
+---
+
+## 🧪 Pengujian Otomatis
+
+Jalankan test suite aplikasi:
+```bash
+php artisan test
+# Atau via PHPUnit langsung:
+php vendor/phpunit/phpunit/phpunit
+```

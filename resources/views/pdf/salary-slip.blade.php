@@ -146,7 +146,7 @@
             <td class="info-label">Masa Kerja</td>
             <td class="info-colon">:</td>
             <td>
-                {{ $payroll->karyawan->kategori_masa_kerja === 'B' ? '>= 5 Tahun (Kategori B)' : '< 5 Tahun (Kategori A)' }}
+                {{ ($payroll->rincian['kategori_masa_kerja'] ?? $payroll->karyawan->kategori_masa_kerja) === 'B' ? '>= 5 Tahun (Kategori B)' : '< 5 Tahun (Kategori A)' }}
             </td>
         </tr>
     </table>
@@ -156,8 +156,8 @@
             <tr>
                 <th>Komponen Pendapatan</th>
                 <th class="number-cell">Jumlah</th>
-                <th>Komponen Potongan</th>
-                <th class="number-cell">Jumlah</th>
+                <th>Keterangan / Potongan</th>
+                <th class="number-cell">Nilai</th>
             </tr>
         </thead>
         <tbody>
@@ -174,9 +174,9 @@
                 <td class="number-cell">Mulai 14 jam</td>
             </tr>
             <tr>
-                <td>Jumlah Hari Tercatat</td>
+                <td>Jumlah Hari Hadir</td>
                 <td class="number-cell">{{ $payroll->hari_hadir }} hari</td>
-                <td>Potongan</td>
+                <td>Total Potongan</td>
                 <td class="number-cell">Rp {{ number_format($payroll->potongan, 0, ',', '.') }}</td>
             </tr>
         </tbody>
@@ -198,7 +198,7 @@
                 Tegal, {{ $tanggal_cetak }}<br>
                 Staff Administrasi (HRD),
                 <div class="signature-line"></div>
-                <br>Siti Rahayu
+                <br>{{ $petugas ?? 'Staff HRD' }}
             </td>
         </tr>
     </table>

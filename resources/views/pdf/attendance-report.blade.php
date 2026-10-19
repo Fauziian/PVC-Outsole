@@ -129,7 +129,7 @@
                 Tegal, {{ $tanggal_cetak }}<br>
                 Dibuat Oleh (HRD Staff),
                 <div class="signature-line"></div>
-                <br>Siti Rahayu
+                <br>{{ $dibuat_oleh ?? 'Staff HRD' }}
             </td>
         </tr>
     </table>

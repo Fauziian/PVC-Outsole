@@ -33,11 +33,16 @@ class DashboardController extends Controller
 
         // 1. Data Umum untuk Dashboard
         if ($role === 'admin') {
+            $totalGaji = KomponenGaji::where('periode', Carbon::now()->format('Y-m'))->sum('total_gaji');
+            if ($totalGaji == 0) {
+                $totalGaji = KomponenGaji::where('periode', Carbon::now()->subMonth()->format('Y-m'))->sum('total_gaji');
+            }
+
             $data['stats'] = [
                 'total_karyawan' => Karyawan::where('is_active', true)->count(),
-                'hadir_hari_ini' => Absensi::where('tanggal', now()->toDateString())->count(),
+                'hadir_hari_ini' => Absensi::whereDate('tanggal', now()->toDateString())->count(),
                 'total_stok' => BarangPvc::sum('stok_saat_ini'),
-                'total_gaji_bulan_ini' => KomponenGaji::where('periode', Carbon::now()->format('Y-m'))->sum('total_gaji'),
+                'total_gaji_bulan_ini' => $totalGaji,
                 'recent_logins' => User::whereNotNull('last_login_at')
                     ->orderBy('last_login_at', 'desc')
                     ->take(5)
@@ -50,17 +55,19 @@ class DashboardController extends Controller
             $data['stats'] = [
                 'total_karyawan' => Karyawan::where('is_active', true)->count(),
                 'karyawan_nonaktif' => Karyawan::where('is_active', false)->count(),
-                'hadir_hari_ini' => Absensi::where('tanggal', now()->toDateString())
-                    ->whereIn('status_kehadiran', ['Penuh', 'Jam Lebih', 'Lembur'])
+                'hadir_hari_ini' => Absensi::whereDate('tanggal', now()->toDateString())->count(),
+                'sedang_bekerja' => Absensi::whereDate('tanggal', now()->toDateString())
+                    ->where('sudah_pulang', false)
                     ->count(),
-                'setengah_hari_ini' => Absensi::where('tanggal', now()->toDateString())
+                'setengah_hari_ini' => Absensi::whereDate('tanggal', now()->toDateString())
                     ->where('status_kehadiran', 'Setengah Hari')
+                    ->where('sudah_pulang', true)
                     ->count(),
                 'total_payroll_bulan_lalu' => KomponenGaji::where('periode', Carbon::now()->subMonth()->format('Y-m'))
                     ->sum('total_gaji'),
             ];
 
-            // Rincian absensi 5 hari terakhir
+            // Rincian absensi terbaru
             $data['recent_absensi'] = Absensi::with('karyawan:id,nama,jabatan')
                 ->orderBy('tanggal', 'desc')
                 ->take(5)
@@ -71,11 +78,15 @@ class DashboardController extends Controller
             $data['stats'] = [
                 'total_jenis_barang' => BarangPvc::count(),
                 'stok_aman' => BarangPvc::whereRaw('stok_saat_ini > (stok_minimum * 1.3)')->count(),
-                'stok_menipis' => BarangPvc::whereRaw('stok_saat_ini > 0 AND stok_saat_ini <= (stok_minimum * 1.3)')->count(),
-                'stok_kritis' => BarangPvc::where('stok_saat_ini', 0)->count(),
+                'stok_menipis' => BarangPvc::whereRaw('stok_saat_ini > stok_minimum AND stok_saat_ini <= (stok_minimum * 1.3)')->count(),
+                'stok_kritis' => BarangPvc::whereRaw('stok_saat_ini <= stok_minimum')->count(),
             ];
 
-            $data['notifikasi_kritis'] = [];
+            $data['notifikasi_kritis'] = NotifikasiStok::with('barangPvc')
+                ->where('is_read', false)
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
 
             // Ringkasan stok fisik yang dapat langsung dilihat petugas gudang.
             $data['stok_tersedia'] = BarangPvc::query()
@@ -135,12 +146,24 @@ class DashboardController extends Controller
             ];
         }
 
+        // 3. Notifikasi Stok Baru
+        $notif = NotifikasiStok::with('barangPvc')->orderBy('created_at', 'desc')->take(3)->get();
+        foreach ($notif as $n) {
+            $activities[] = [
+                'id' => 'NTF-' . $n->id,
+                'type' => 'alert',
+                'text' => $n->pesan,
+                'time' => $n->created_at->diffForHumans(),
+                'timestamp' => $n->created_at->timestamp,
+            ];
+        }
+
         if ($role === 'warehouse') {
             usort($activities, fn ($a, $b) => $b['timestamp'] <=> $a['timestamp']);
             return array_slice($activities, 0, 6);
         }
 
-        // 3. Aktivitas Karyawan Baru
+        // 4. Aktivitas Karyawan Baru
         $karyawan = Karyawan::orderBy('created_at', 'desc')->take(2)->get();
         foreach ($karyawan as $emp) {
             $activities[] = [
@@ -149,18 +172,6 @@ class DashboardController extends Controller
                 'text' => "Pendaftaran Karyawan Baru: {$emp->nama} sebagai {$emp->jabatan}",
                 'time' => $emp->created_at->diffForHumans(),
                 'timestamp' => $emp->created_at->timestamp,
-            ];
-        }
-
-        // 4. Notifikasi Stok Baru
-        $notif = NotifikasiStok::with('barangPvc')->orderBy('created_at', 'desc')->take(2)->get();
-        foreach ($notif as $n) {
-            $activities[] = [
-                'id' => 'NTF-' . $n->id,
-                'type' => 'alert',
-                'text' => $n->pesan,
-                'time' => $n->created_at->diffForHumans(),
-                'timestamp' => $n->created_at->timestamp,
             ];
         }
 

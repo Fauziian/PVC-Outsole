@@ -27,7 +27,7 @@ export default function SettingsPage({ settings, active_setting }: Props) {
 
   return <SumberPvcLayout>
     <Head title="Pengaturan Tarif Gaji" />
-    <div><h1 className="text-xl font-bold text-slate-800">Pengaturan Tarif Gaji</h1><p className="text-xs text-slate-500">Tarif per jam mengikuti masa kerja. Jam ke-9 dan seterusnya dicatat sebagai lembur.</p></div>
+    <div><h1 className="text-xl font-bold text-slate-800">Pengaturan Tarif Gaji</h1><p className="text-xs text-slate-500">Tarif per jam mengikuti masa kerja karyawan. Durasi kerja 8–13 jam dihitung reguler, durasi 14–15 jam dicatat sebagai lembur.</p></div>
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <form onSubmit={submit} className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-4"><Settings size={18} className="text-blue-600" /><h2 className="text-sm font-bold text-slate-800">Tarif per Jam Aktif</h2></div>

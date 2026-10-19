@@ -34,7 +34,7 @@ class Absensi extends Model
     protected function casts(): array
     {
         return [
-            'tanggal'    => 'date',
+            'tanggal'    => 'date:Y-m-d',
             'durasi_jam' => 'decimal:2',
             'jam_normal' => 'decimal:2',
             'jam_lembur' => 'decimal:2',
