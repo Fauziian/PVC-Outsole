@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kartu Hasil Uji Teknis PHPUnit</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      width: 960px;
+    }
+    #cardRoot {
+      width: 960px;
+      padding: 28px 34px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+    }
+    .kicker {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .status-line {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+    }
+    .status-pass { color: #166534; }
+    .status-fail { color: #991b1b; }
+    .meta {
+      font-size: 12.5px;
+      color: #475569;
+      margin-bottom: 14px;
+    }
+    .divider {
+      border: 0;
+      border-top: 1.5px solid #475569;
+      margin: 12px 0 18px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .col-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      color: #0f172a;
+    }
+    pre {
+      margin: 0;
+      padding: 12px 14px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #1e293b;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .footer-note {
+      margin-top: 12px;
+      font-size: 11.5px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div id="cardRoot">
+  <div class="kicker">SUMBER PVC &middot; REKAMAN PENGUJIAN OTOMATIS</div>
+  <h1 id="title"></h1>
+  <div id="statusLine" class="status-line"></div>
+  <div id="metaLine" class="meta"></div>
+  <hr class="divider" />
+  <div class="grid">
+    <div>
+      <h2 class="col-title">Hasil aktual pengujian</h2>
+      <pre id="actualJson"></pre>
+    </div>
+    <div>
+      <h2 class="col-title">Keluaran pemeriksaan PHPUnit</h2>
+      <pre id="phpunitOutput"></pre>
+    </div>
+  </div>
+  <div class="footer-note">Tampilan rekaman uji teknis, bukan antarmuka aplikasi.</div>
+  </div>
+  <script>
+    window.renderEvidenceCard = function (payload) {
+      document.getElementById('title').textContent = payload.ku + ' — ' + payload.feature;
+      const statusEl = document.getElementById('statusLine');
+      statusEl.className = 'status-line ' + (payload.status === 'Sesuai' ? 'status-pass' : 'status-fail');
+      statusEl.textContent = 'Hasil: ' + payload.status + ' · ' + payload.assertions + ' assertion · ' + payload.duration + ' detik';
+      document.getElementById('metaLine').textContent = 'PHPUnit ' + payload.phpunit_version + ' · PHP ' + payload.php_version + ' · SQLite terisolasi';
+      document.getElementById('actualJson').textContent = JSON.stringify(payload.actual, null, 2);
+      document.getElementById('phpunitOutput').textContent = payload.phpunit_output;
+    };
+  </script>
+</body>
+</html>
+

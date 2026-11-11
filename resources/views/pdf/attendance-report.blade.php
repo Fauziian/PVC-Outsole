@@ -84,7 +84,7 @@
 
     <div class="header">
         <div class="company-title">Sumber PVC Outsole Tali Jepit</div>
-        <div class="company-subtitle">Jl. Raya Industri Dampyak No. 12, Tegal, Jawa Tengah. Telp: (0283) 351421</div>
+        <div class="company-subtitle">Jl. Kolonel H.J. Sunarto RT 04/RW 02, Desa Parakan, Kecamatan Ciomas, Kabupaten Bogor. Telp: (+62) 823-1115-3669</div>
     </div>
 
     <div class="report-title">Laporan Rekapitulasi Kehadiran Karyawan</div>
@@ -126,7 +126,7 @@
                 <br>Drs. Haryanto, M.M.
             </td>
             <td>
-                Tegal, {{ $tanggal_cetak }}<br>
+                Bogor, {{ $tanggal_cetak }}<br>
                 Dibuat Oleh (HRD Staff),
                 <div class="signature-line"></div>
                 <br>{{ $dibuat_oleh ?? 'Staff HRD' }}

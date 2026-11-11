@@ -19,8 +19,11 @@ class PayrollCalculationService
      */
     public function calculate(Karyawan $karyawan, string $periode): array
     {
-        $setting = SettingGaji::aktif();
-        $kategoriMasaKerja = $karyawan->kategori_masa_kerja ?: $karyawan->kategori_otomatis;
+        $periodEnd = \Carbon\Carbon::createFromFormat('Y-m', $periode)->endOfMonth();
+        $setting = SettingGaji::untukPeriode($periode);
+        $kategoriMasaKerja = $karyawan->tanggal_masuk
+            ? $karyawan->kategoriPadaTanggal($periodEnd)
+            : ($karyawan->kategori_masa_kerja ?: $karyawan->kategori_otomatis);
         $tarifPerJam = $kategoriMasaKerja === 'B'
             ? $setting->tarif_per_jam_kategori_b
             : $setting->tarif_per_jam_kategori_a;

@@ -78,21 +78,28 @@
         .number-cell {
             text-align: right;
         }
-        .total-box {
+        .total-table {
+            width: 100%;
+            border-collapse: collapse;
             background-color: #f9f9f9;
             border: 1px solid #ccc;
-            padding: 8px;
+            margin-bottom: 20px;
+        }
+        .total-table td {
+            padding: 8px 10px;
             font-size: 12px;
             font-weight: bold;
-            margin-bottom: 20px;
-            overflow: hidden;
+            line-height: 1.4;
+            vertical-align: middle;
         }
         .total-label {
-            float: left;
+            text-align: left;
+            color: #333;
         }
         .total-val {
-            float: right;
+            text-align: right;
             color: #1a56db;
+            white-space: nowrap;
         }
         .footer-table {
             width: 100%;
@@ -122,7 +129,7 @@
 
     <div class="header">
         <div class="company-title">Sumber PVC Outsole Tali Jepit</div>
-        <div class="company-subtitle">Jl. Raya Industri Dampyak No. 12, Tegal, Jawa Tengah. Telp: (0283) 351421</div>
+        <div class="company-subtitle">Jl. Kolonel H.J. Sunarto RT 04/RW 02, Desa Parakan, Kecamatan Ciomas, Kabupaten Bogor. Telp: (+62) 823-1115-3669</div>
     </div>
 
     <div class="slip-title">Slip Gaji Karyawan</div>
@@ -182,10 +189,12 @@
         </tbody>
     </table>
 
-    <div class="total-box">
-        <span class="total-label">GAJI BERSIH YANG DITERIMA (NETTO)</span>
-        <span class="total-val">Rp {{ number_format($payroll->total_gaji, 0, ',', '.') }}</span>
-    </div>
+    <table class="total-table">
+        <tr>
+            <td class="total-label">GAJI BERSIH YANG DITERIMA (NETTO)</td>
+            <td class="total-val">Rp {{ number_format($payroll->total_gaji, 0, ',', '.') }}</td>
+        </tr>
+    </table>
 
     <table class="footer-table">
         <tr>
@@ -195,7 +204,7 @@
                 <br>{{ $payroll->karyawan->nama }}
             </td>
             <td>
-                Tegal, {{ $tanggal_cetak }}<br>
+                Bogor, {{ $tanggal_cetak }}<br>
                 Staff Administrasi (HRD),
                 <div class="signature-line"></div>
                 <br>{{ $petugas ?? 'Staff HRD' }}

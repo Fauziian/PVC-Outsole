@@ -67,4 +67,18 @@ class SettingGaji extends Model
             'keterangan'             => 'Pengaturan default sistem',
         ]);
     }
+
+    /**
+     * Ambil tarif historis yang berlaku pada akhir periode gaji tertentu,
+     * atau fallback ke tarif aktif jika tidak ada catatan historis sebelumnya.
+     */
+    public static function untukPeriode(string $periode): self
+    {
+        $periodEnd = \Carbon\Carbon::createFromFormat('Y-m', $periode)->endOfMonth();
+
+        return static::where('created_at', '<=', $periodEnd)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first() ?? static::aktif();
+    }
 }

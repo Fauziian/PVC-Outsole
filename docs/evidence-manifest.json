@@ -1,0 +1,789 @@
+{
+  "generated_at": "2026-11-11T10:47:08.397Z",
+  "git_head": "eb7e9d9",
+  "baseline_commit": "9c18cf5",
+  "summary": {
+    "total_ku": 34,
+    "passed": 34,
+    "failed": 0
+  },
+  "cases": {
+    "KU-01": {
+      "ku": "KU-01",
+      "fitur": "Validasi Login Gagal",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.270724,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-01-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-01-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "errors": [
+          "username"
+        ],
+        "guest": true
+      }
+    },
+    "KU-02": {
+      "ku": "KU-02",
+      "fitur": "Login Berhasil & Redirect",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.008053,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-02-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-02-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "status": 302,
+        "redirect": "/dashboard",
+        "authenticated": true
+      }
+    },
+    "KU-03": {
+      "ku": "KU-03",
+      "fitur": "Logout Sesi",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 5,
+      "durasi_detik": 0.006127,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-03-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-03-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "logout_status": 302,
+        "logout_redirect": "/",
+        "guest": true,
+        "root_redirect": "/login"
+      }
+    },
+    "KU-04": {
+      "ku": "KU-04",
+      "fitur": "Tambah Akun Pengguna",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.012679,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-04-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-04-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "username": "hr_baru",
+        "role": "hr",
+        "is_active": true,
+        "password_hashed": true
+      }
+    },
+    "KU-05": {
+      "ku": "KU-05",
+      "fitur": "Ubah Pengguna & Status",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.008314,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-05-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-05-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "nama": "Nama Diubah HR",
+        "is_active": false
+      }
+    },
+    "KU-06": {
+      "ku": "KU-06",
+      "fitur": "Reset Kata Sandi",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 2,
+      "durasi_detik": 0.007932,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-06-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-06-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "username": "hr_reset",
+        "new_password_verified": true
+      }
+    },
+    "KU-07": {
+      "ku": "KU-07",
+      "fitur": "Proteksi Akun Sendiri",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.006089,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-07-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-07-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "exists": true,
+        "is_active": true,
+        "self_protection": true
+      }
+    },
+    "KU-08": {
+      "ku": "KU-08",
+      "fitur": "Tambah Data Karyawan",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.005369,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-08-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-08-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "nama": "Karyawan Baru Uji",
+        "jabatan": "Karyawan",
+        "kategori_masa_kerja": "A"
+      }
+    },
+    "KU-09": {
+      "ku": "KU-09",
+      "fitur": "Ubah Data Karyawan",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.005515,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-09-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-09-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "nama": "Karyawan Senior Uji",
+        "tanggal_masuk": "2020-01-01",
+        "kategori_masa_kerja": "B"
+      }
+    },
+    "KU-10": {
+      "ku": "KU-10",
+      "fitur": "Hapus Data Karyawan",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 2,
+      "durasi_detik": 0.007921,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-10-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-10-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "deleted_id": 1,
+        "exists_in_db": false
+      }
+    },
+    "KU-11": {
+      "ku": "KU-11",
+      "fitur": "Catat Check-In Masuk",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.008238,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-11-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-11-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "count": 1,
+        "jam_masuk": "08:00",
+        "sudah_pulang": false
+      }
+    },
+    "KU-12": {
+      "ku": "KU-12",
+      "fitur": "Validasi Duplikasi Masuk",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.008772,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-12-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-12-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 302,
+        "attendance_count": 1
+      }
+    },
+    "KU-13": {
+      "ku": "KU-13",
+      "fitur": "Catat Check-Out Pulang",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 5,
+      "durasi_detik": 0.011557,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-13-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-13-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "jam_keluar": "22:00",
+        "jam_normal": 13,
+        "jam_lembur": 1,
+        "status_kehadiran": "Lembur"
+      }
+    },
+    "KU-14": {
+      "ku": "KU-14",
+      "fitur": "Ubah Tarif Upah Jam",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.006462,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-14-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-14-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "active_count": 1,
+        "tarif_a": 12000,
+        "tarif_b": 17000
+      }
+    },
+    "KU-15": {
+      "ku": "KU-15",
+      "fitur": "Kalkulasi Gaji Massal",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.009569,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-15-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-15-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "total_jam_normal": 30,
+        "total_gaji": 360000
+      }
+    },
+    "KU-16": {
+      "ku": "KU-16",
+      "fitur": "Pratinjau Lembar Slip",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 12,
+      "durasi_detik": 0.033267,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-16-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-16-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 200,
+        "component": "Payroll/Show",
+        "total_gaji": 96000
+      }
+    },
+    "KU-17": {
+      "ku": "KU-17",
+      "fitur": "Finalisasi Status Slip",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.012707,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-17-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-17-antarmuka-sesuai.png",
+        "hasil": "docx/Laporan/gambar/KU-17-hasil-sesuai.png",
+        "sebelum_perbaikan": [
+          "docx/Laporan/gambar/KU-17-sebelum-perbaikan-tidak-sesuai.jpg",
+          "docx/Laporan/gambar/KU-17-sebelum-perbaikan-antarmuka.jpg"
+        ],
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "status_sebelum_hitung_ulang": "final",
+        "status_setelah_hitung_ulang": "final",
+        "redirect_status": 302
+      }
+    },
+    "KU-18": {
+      "ku": "KU-18",
+      "fitur": "Unduh Slip Gaji PDF",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.086616,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-18-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-18-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": {
+          "filename": "Slip-Gaji-Karyawan Slip 8 Jam-2026-09.pdf",
+          "url": "http://127.0.0.1:8099/payroll/2/pdf",
+          "path": "C:\\xampp\\htdocs\\sumber-pvc-scratch\\downloads\\KU-18-Slip-Gaji-Karyawan Slip 8 Jam-2026-09.pdf",
+          "bytes": 3210,
+          "signature": "%PDF"
+        }
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 200,
+        "bytes": 3200,
+        "header": "%PDF-1.7"
+      }
+    },
+    "KU-19": {
+      "ku": "KU-19",
+      "fitur": "Katalog Stok Fisik",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 12,
+      "durasi_detik": 0.013908,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-19-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-19-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 200,
+        "filter_kategori": "Tali Jepit",
+        "kategori_hasil": [
+          "Tali Jepit"
+        ]
+      }
+    },
+    "KU-20": {
+      "ku": "KU-20",
+      "fitur": "Barang Masuk Batch",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.009611,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-20-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-20-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "stok_p1": 100,
+        "stok_p2": 50
+      }
+    },
+    "KU-21": {
+      "ku": "KU-21",
+      "fitur": "Barang Keluar Pelanggan",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.007955,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-21-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-21-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "stok_akhir": 75,
+        "pelanggan": "Toko Uji"
+      }
+    },
+    "KU-22": {
+      "ku": "KU-22",
+      "fitur": "Validasi Stok Tidak Cukup",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.009788,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-22-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-22-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "batch_rolled_back": true,
+        "stok_p1": 100,
+        "stok_p2": 5
+      }
+    },
+    "KU-23": {
+      "ku": "KU-23",
+      "fitur": "Notifikasi Stok Minimum",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.007535,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-23-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-23-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "stok_akhir": 20,
+        "notifications_created": 1
+      }
+    },
+    "KU-24": {
+      "ku": "KU-24",
+      "fitur": "Tandai Baca Notifikasi",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.007677,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-24-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-24-antarmuka-sesuai.png",
+        "hasil": "docx/Laporan/gambar/KU-24-hasil-sesuai.png",
+        "sebelum_perbaikan": "docx/Laporan/gambar/KU-24-sebelum-perbaikan-tidak-sesuai.jpg",
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "registered_read_routes": [
+          "PUT stock/notifications/{notification}/read (stock.notifications.read)",
+          "POST stock/notifications/read-all (stock.notifications.read-all)"
+        ],
+        "is_read": true
+      }
+    },
+    "KU-25": {
+      "ku": "KU-25",
+      "fitur": "Ekspor Absensi PDF",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.031167,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-25-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-25-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": {
+          "filename": "Laporan-Kehadiran-2026-09.pdf",
+          "url": "http://127.0.0.1:8099/reports/attendance/pdf?bulan=2026-09",
+          "path": "C:\\xampp\\htdocs\\sumber-pvc-scratch\\downloads\\KU-25-Laporan-Kehadiran-2026-09.pdf",
+          "bytes": 3146,
+          "signature": "%PDF"
+        }
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 200,
+        "bytes": 2781,
+        "header": "%PDF-1.7"
+      }
+    },
+    "KU-26": {
+      "ku": "KU-26",
+      "fitur": "Ekspor Payroll Excel",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.064203,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-26-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-26-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": {
+          "filename": "Laporan-Gaji-2026-09.xlsx",
+          "url": "http://127.0.0.1:8099/reports/payroll/excel?periode=2026-09",
+          "path": "C:\\xampp\\htdocs\\sumber-pvc-scratch\\downloads\\KU-26-Laporan-Gaji-2026-09.xlsx",
+          "bytes": 6654,
+          "signature": "PK\u0003\u0004"
+        }
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 200,
+        "bytes": 6512,
+        "format": "XLSX (PK)"
+      }
+    },
+    "KU-27": {
+      "ku": "KU-27",
+      "fitur": "Ekspor Mutasi Stok Excel",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 3,
+      "durasi_detik": 0.032292,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-27-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-27-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": {
+          "filename": "Laporan-Gudang-monthly-2026-09.xlsx",
+          "url": "http://127.0.0.1:8099/stock/report/excel?type=monthly&date=2026-09",
+          "path": "C:\\xampp\\htdocs\\sumber-pvc-scratch\\downloads\\KU-27-Laporan-Gudang-monthly-2026-09.xlsx",
+          "bytes": 7055,
+          "signature": "PK\u0003\u0004"
+        }
+      },
+      "catatan": "Terverifikasi melalui PHPUnit & Playwright UI pada SQLite terisolasi.",
+      "actual": {
+        "http_status": 200,
+        "bytes": 8301,
+        "format": "XLSX (PK)"
+      }
+    },
+    "KU-28": {
+      "ku": "KU-28",
+      "fitur": "Proteksi RBAC URL Terlarang",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 1,
+      "durasi_detik": 0.005164,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-28-teknis-sesuai.png",
+        "antarmuka": null,
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "antarmuka: tidak ada, pengujian teknis saja",
+      "actual": {
+        "http_status": 403,
+        "role": "warehouse",
+        "blocked_url": "/users"
+      }
+    },
+    "KU-29": {
+      "ku": "KU-29",
+      "fitur": "Tarif Periode Historis",
+      "status_baseline": "Tidak Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 4,
+      "durasi_detik": 0.008678,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-29-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-29-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": "docx/Laporan/gambar/KU-29-sebelum-perbaikan-tidak-sesuai.png",
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "periode": "2026-09",
+        "tanggal_hitung": "2026-11-04",
+        "kategori_masa_kerja": "A",
+        "tarif_per_jam": 12000,
+        "total_gaji": 96000
+      }
+    },
+    "KU-30": {
+      "ku": "KU-30",
+      "fitur": "Pembaruan Nama dan Username",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 6,
+      "durasi_detik": 0.00542,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-30-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-30-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "nama": "Nama Baru HR",
+        "username": "profil_baru",
+        "session_status": "profile-updated"
+      }
+    },
+    "KU-31": {
+      "ku": "KU-31",
+      "fitur": "Sesi Akun Nonaktif",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 5,
+      "durasi_detik": 0.014211,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-31-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-31-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "http_status": 302,
+        "redirect_to": "/login",
+        "guest": true
+      }
+    },
+    "KU-32": {
+      "ku": "KU-32",
+      "fitur": "Jumlah Hadir HR",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 15,
+      "durasi_detik": 0.015419,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-32-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-32-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "hadir_hari_ini": 1,
+        "sedang_bekerja": 1,
+        "tanggal": "2026-09-10"
+      }
+    },
+    "KU-33": {
+      "ku": "KU-33",
+      "fitur": "Batas Akhir Bulanan",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 18,
+      "durasi_detik": 0.009307,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-33-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-33-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "period_start": "2026-09-01",
+        "period_end": "2026-09-30",
+        "totals_masuk": 7
+      }
+    },
+    "KU-34": {
+      "ku": "KU-34",
+      "fitur": "Batas Akhir Mingguan",
+      "status_baseline": "Sesuai",
+      "status_akhir": "Sesuai",
+      "assertions": 18,
+      "durasi_detik": 0.011535,
+      "waktu_eksekusi": "2026-11-11T10:47:08.397Z",
+      "berkas": {
+        "teknis": "docx/Laporan/gambar/KU-34-teknis-sesuai.png",
+        "antarmuka": "docx/Laporan/gambar/KU-34-antarmuka-sesuai.png",
+        "hasil": null,
+        "sebelum_perbaikan": null,
+        "unduhan": null
+      },
+      "catatan": "Laporan awal mencantumkan Tidak Sesuai; verifikasi & perbaikan diverifikasi pada commit akhir.",
+      "actual": {
+        "period_start": "2026-08-31",
+        "period_end": "2026-09-06",
+        "totals_masuk": 7
+      }
+    }
+  }
+}

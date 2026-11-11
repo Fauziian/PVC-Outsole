@@ -60,7 +60,27 @@ class Karyawan extends Model
      */
     public function getKategoriOtomatisAttribute(): string
     {
-        return $this->masa_kerja_tahun >= 5 ? 'B' : 'A';
+        return $this->kategoriPadaTanggal(now());
+    }
+
+    /**
+     * Tentukan kategori masa kerja berdasarkan tanggal_masuk pada tanggal acuan tertentu.
+     */
+    public function kategoriPadaTanggal(\Carbon\CarbonInterface|string|null $referenceDate = null): string
+    {
+        if (!$this->tanggal_masuk) {
+            return $this->kategori_masa_kerja ?: 'A';
+        }
+
+        $ref = $referenceDate instanceof \Carbon\CarbonInterface
+            ? $referenceDate->copy()->startOfDay()
+            : Carbon::parse($referenceDate ?? now())->startOfDay();
+
+        $masuk = $this->tanggal_masuk instanceof \Carbon\CarbonInterface
+            ? $this->tanggal_masuk->copy()->startOfDay()
+            : Carbon::parse($this->tanggal_masuk)->startOfDay();
+
+        return $ref->greaterThanOrEqualTo($masuk->copy()->addYears(5)) ? 'B' : 'A';
     }
 
     // ─── Relationships ────────────────────────────────────────────────────────────
