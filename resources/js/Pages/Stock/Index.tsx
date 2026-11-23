@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
+import Pagination from "@/Components/Pagination";
 import { Head, useForm, router } from "@inertiajs/react";
 import { Plus, Edit2, Trash2, Search, X, AlertTriangle } from "lucide-react";
 
@@ -218,21 +219,7 @@ export default function Index({ items, filters }: IndexProps) {
             <span className="text-xs text-slate-400">
               Menampilkan {items.data.length} dari {items.total} jenis barang
             </span>
-            <div className="flex gap-2">
-              {items.links.map((link: any, idx: number) => (
-                <button
-                  key={idx}
-                  onClick={() => link.url && router.get(link.url)}
-                  disabled={!link.url || link.active}
-                  className={`px-3 py-1.5 text-xs font-bold rounded ${
-                    link.active 
-                      ? "bg-blue-600 text-white" 
-                      : "border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 disabled:opacity-40"
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: link.label }}
-                />
-              ))}
-            </div>
+            <Pagination links={items.links} />
           </div>
         )}
       </div>

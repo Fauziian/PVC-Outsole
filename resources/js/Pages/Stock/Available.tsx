@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Head, router } from "@inertiajs/react";
 import { Package, Search } from "lucide-react";
 import SumberPvcLayout from "@/Layouts/SumberPvcLayout";
+import Pagination from "@/Components/Pagination";
 
 type Product = {
   id: number; kode_barang: string; nama_barang: string; kategori: string;
@@ -66,7 +67,12 @@ export default function Available({ items, filters, jenis_tali_jepit }: Props) {
       <div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-400"><tr><th className="px-5 py-4">Kode</th><th className="px-5 py-4">Kategori</th><th className="px-5 py-4">Produk</th><th className="px-5 py-4">Stok minimum</th><th className="px-5 py-4">Stok tersedia</th><th className="px-5 py-4">Status</th></tr></thead><tbody className="divide-y divide-slate-100">
         {items.data.length === 0 ? <tr><td colSpan={6} className="px-5 py-10 text-center text-slate-400">Produk tidak ditemukan.</td></tr> : items.data.map(item => <tr key={item.id} className="hover:bg-slate-50/60"><td className="px-5 py-4 font-mono font-bold text-slate-600">{item.kode_barang}</td><td className="px-5 py-4 text-slate-500">{item.kategori}</td><td className="px-5 py-4"><p className="font-bold text-slate-800">{detail(item)}</p><p className="mt-0.5 text-[10px] text-slate-400">{item.nama_barang}</p></td><td className="px-5 py-4 text-slate-500">{item.stok_minimum} {item.satuan}</td><td className="px-5 py-4 text-base font-black text-slate-800">{item.stok_saat_ini} <span className="text-[10px] font-bold text-slate-400">{item.satuan}</span></td><td className="px-5 py-4"><span className={`inline-flex rounded-full border px-2 py-1 text-[10px] font-bold uppercase ${statusStyle[item.status_stok]}`}>{item.status_stok}</span></td></tr>)}
       </tbody></table></div>
-      {items.last_page > 1 && <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-3"><span className="text-[11px] text-slate-400">Halaman {items.current_page} dari {items.last_page}</span><div className="flex gap-1">{items.links.map((link, index) => <button key={index} disabled={!link.url || link.active} onClick={() => link.url && router.get(link.url)} className={`rounded px-2.5 py-1 text-xs font-bold ${link.active ? "bg-blue-600 text-white" : "bg-white text-slate-500 ring-1 ring-slate-200 disabled:opacity-40"}`} dangerouslySetInnerHTML={{ __html: link.label }} />)}</div></div>}
+      {items.last_page > 1 && (
+        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-3">
+          <span className="text-[11px] text-slate-400">Halaman {items.current_page} dari {items.last_page}</span>
+          <Pagination links={items.links} />
+        </div>
+      )}
     </div>
   </SumberPvcLayout>;
 }
